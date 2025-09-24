@@ -9,7 +9,7 @@
 ## 📧 Contacto e Integrantes
 - **Espitia Pizza Juan Manuel** - jespitiap@unal.edu.co
 - **Prieto Mendoza Andrew Nicolay** - aprietome@unal.edu.co
-- **Rodriguez Ortiz Esteban Steeven** - serodriguezor@unal.edu.co
+- **Rodriguez Ortiz Sebastian Steeven** - serodriguezor@unal.edu.co
 - **Gonzalez Tapia Yeswah** - yegonzalezt@unal.edu.co
 - **Cortes Salazar David Camilo** - dacortess@unal.edu.co
 
