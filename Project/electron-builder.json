@@ -1,0 +1,19 @@
+{
+  "appId": "com.caja-control-pro.app",
+  "productName": "Caja Control Pro",
+  "icon": "./icon.png",
+  "files": [
+    "dist-electron",
+    "dist-react"
+  ],
+  "mac": {
+    "category": "dmg"
+  },
+  "win": {
+    "target": ["portable", "msi"]
+  },
+  "linux": {
+    "target": "AppImage",
+    "category": "Utility"
+  }
+}
