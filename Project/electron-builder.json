@@ -1,19 +1,41 @@
 {
-  "appId": "com.caja-control-pro.app",
+  "appId": "com.cajkontrolpro.app",
   "productName": "Caja Control Pro",
-  "icon": "./icon.png",
+  "directories": {
+    "buildResources": "assets",
+    "output": "dist"
+  },
   "files": [
-    "dist-electron",
-    "dist-react"
+    "dist-react/**/*",
+    "electron/**/*",
+    "node_modules/**/*",
+    ".env",
+    "package.json"
   ],
-  "mac": {
-    "category": "dmg"
-  },
   "win": {
-    "target": ["portable", "msi"]
+    "target": [
+      {
+        "target": "nsis",
+        "arch": [
+          "x64"
+        ]
+      },
+      {
+        "target": "portable",
+        "arch": [
+          "x64"
+        ]
+      }
+    ]
   },
-  "linux": {
-    "target": "AppImage",
-    "category": "Utility"
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "Caja Control Pro"
+  },
+  "portable": {
+    "artifactName": "CajaControlPro-${version}.exe"
   }
 }

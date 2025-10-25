@@ -10,8 +10,6 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
-dist-react
-dist-electron
 *.local
 
 # Editor directories and files
@@ -24,3 +22,14 @@ dist-electron
 *.njsproj
 *.sln
 *.sw?
+
+/dist-react
+/src/generated/prisma
+
+/src/generated/prisma
+
+/src/generated/prisma
+
+/src/generated/prisma
+
+/src/generated/prisma
