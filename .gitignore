@@ -11,3 +11,5 @@ out/
 .idea/
 
 docker/db/data/
+
+/generated/prisma
