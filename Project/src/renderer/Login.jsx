@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function Login() {
+export default function Login({ onLogin }) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -8,7 +8,7 @@ export default function Login() {
     const handleLogin = () => {
         console.log("Email:", email);
         console.log("Password:", password);
-        alert("Iniciando sesión...");
+        onLogin()
     };
 
     return (
