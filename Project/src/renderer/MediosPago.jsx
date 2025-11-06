@@ -21,15 +21,10 @@ export default function MediosPago() {
         setFile(URL.createObjectURL(img));
     }
 
-
-
     const [activeTab, setActiveTab] = useState("add");
-    const [loggedIn, setLoggedIn] = useState(false);
-    const [view, setView] = useState("dashboard");
-
 
     return (
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full p-20">
             <div>
                 <span className="text-black text-2xl">Configuracion</span>
                 <span className="block text text-gray-700">Medio de pago</span>
@@ -58,7 +53,8 @@ export default function MediosPago() {
 
                 {activeTab === "add" ? (
                     <div>
-                        <div className="flex flex-row px-10 pt-2 items-center gap-4 mt-4"> <CreditCard className="flex-none text-green-600 row-span-2 bg-green-400/30 rounded-full p-3" size={60} />
+                        <div className="flex flex-row px-10 pt-2 items-center gap-4 mt-4">
+                            <CreditCard className="flex-none text-green-600 row-span-2 bg-green-400/30 rounded-full p-3" size={60} />
                             <div>
                                 <span className="text-black flex items-center font-medium">Agregar nuevo medio de pago</span>
                                 <span className="flex items-center text-gray-700 text-sm">

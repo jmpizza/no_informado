@@ -17,8 +17,8 @@ export default function LeftPanel({ setView }) {
 
     const menuItems = [
         { title: "Inicio", icon: Home, view: "home", children: null },
-        { title: "Operacion de Caja", icon: DollarSign, view: "cash", children: ["Por poner"] },
-        { title: "Administrar usuarios", icon: Users, view: "users", children: ["Registrar usuario", "Administrar permisos", "Administrar roles"] },
+        { title: "Operacion de Caja", icon: DollarSign, view: null, children: [{ title: "Por poner", view: null }] },
+        { title: "Administrar usuarios", icon: Users, view: null, children: [{ title: "Registrar usuario", view: "registrarUsuario" }, { title: "Administrar permisos", view: null }, { title: "Administrar roles", view: null }] },
         { title: "Reportes y analisis", icon: BarChart3, view: "reports", children: null },
         { title: "Alertas e inconsistencias", icon: AlertTriangle, view: "alerts", children: null },
         { title: "Medios de pago", icon: CreditCard, view: "mediosPago", children: null },
@@ -57,7 +57,9 @@ export default function LeftPanel({ setView }) {
                             <div
                                 onClick={() => {
                                     toggle(index);
-                                    setView(item.view); // 🔥 Se llama aquí
+                                    if (!(item.view == null)) {
+                                        setView(item.view);
+                                    }
                                 }}
                                 className="flex items-center justify-between text-sm text-white p-3 cursor-pointer hover:bg-[#0037a3] transition-colors"
                             >
@@ -71,13 +73,17 @@ export default function LeftPanel({ setView }) {
                             </div>
 
                             {isOpen && item.children && (
-                                <div className="ml-10 space-y-1">
+                                <div
+                                    className="ml-10 space-y-1">
                                     {item.children.map((child, i) => (
                                         <span
                                             key={i}
+                                            onClick={() => {
+                                                setView(child.view)
+                                            }}
                                             className="block text-xs text-gray-200 p-2 cursor-pointer hover:text-white"
                                         >
-                                            {child}
+                                            {child.title}
                                         </span>
                                     ))}
                                 </div>
