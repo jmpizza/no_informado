@@ -1,9 +1,9 @@
 import { useState } from "react";
-import Login from "./renderer/Login";
-import Dashboard from "./renderer/Dashboard";
-import LeftPanel from "./renderer/LeftPanel";
-import MediosPago from "./renderer/MediosPago";
-import RegistrarUsuario from "./renderer/RegistrarUsuario";
+import Login from "./renderer/components/auth/Login";
+import Dashboard from "./renderer/components/layout/Dashboard";
+import LeftPanel from "./renderer/components/layout/LeftPanel";
+import MediosPago from "./renderer/components/pages/MediosPago";
+import RegistrarUsuario from "./renderer/components/auth/RegistrarUsuario";
 
 
 function App() {
