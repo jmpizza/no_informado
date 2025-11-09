@@ -1,11 +1,13 @@
-import { PrismaClient } from "@prisma/client";
+import pkg from '@prisma/client';
+const { PrismaClient } = pkg;
 
 class DatabaseSingle {
-  static instance;
-  prisma;
-
   constructor() {
-    this.prisma = new PrismaClient();
+    if (!DatabaseSingle.instance) {
+      this.prisma = new PrismaClient();
+      DatabaseSingle.instance = this;
+    }
+    return DatabaseSingle.instance;
   }
 
   static getInstance() {
@@ -13,6 +15,12 @@ class DatabaseSingle {
       DatabaseSingle.instance = new DatabaseSingle();
     }
     return DatabaseSingle.instance;
+  }
+
+  async disconnect() {
+    if (this.prisma) {
+      await this.prisma.$disconnect();
+    }
   }
 }
 

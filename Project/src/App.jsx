@@ -1,19 +1,20 @@
+// App.jsx - CORREGIDO
 import { useState } from "react";
+import { AuthProvider, useAuth } from "./renderer/components/auth/AuthContext"; // ✅ Agregar useAuth aquí
 import Login from "./renderer/components/auth/Login";
 import Dashboard from "./renderer/components/layout/Dashboard";
 import LeftPanel from "./renderer/components/layout/LeftPanel";
 import MediosPago from "./renderer/components/pages/MediosPago";
 import RegistrarUsuario from "./renderer/components/auth/RegistrarUsuario";
 
-
-function App() {
-    const [loggedIn, setLoggedIn] = useState(false);
+function AppContent() {
     const [view, setView] = useState("dashboard");
+    const { user } = useAuth();
 
     return (
         <div>
-            {!loggedIn ? (
-                <Login onLogin={() => setLoggedIn(true)} />
+            {!user ? (
+                <Login />
             ) : (
                 <div className="flex h-screen w-screen">
                     <LeftPanel setView={setView} />
@@ -25,6 +26,14 @@ function App() {
                 </div>
             )}
         </div>
+    );
+}
+
+function App() {
+    return (
+        <AuthProvider>
+            <AppContent />
+        </AuthProvider>
     );
 }
 
