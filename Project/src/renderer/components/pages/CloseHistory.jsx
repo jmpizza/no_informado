@@ -303,7 +303,7 @@ if (onClosureViewed) onClosureViewed();
 
 
 
-return ( <div className="p-8 max-w-7xl mx-auto">
+return ( <div className="p-8 flex flex-col min-h-screen bg-gray-100">
 {/* HEADER */} <div className="mb-8"> <div className="flex items-center justify-between"> <div> <div className="flex items-center gap-3 mb-2"> <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center"> <History className="w-5 h-5 text-blue-600" /> </div> <h1 className="text-gray-900">Historial de cajas</h1> </div> <p className="text-gray-600">Visualiza todos los cierres de caja registrados en el sistema</p> </div>
 <Button onClick={() => setShowExportModal(true)} variant="outline" className="gap-2"> <Download className="w-4 h-4" /> Exportar </Button> </div> </div>
 
@@ -329,7 +329,7 @@ return ( <div className="p-8 max-w-7xl mx-auto">
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Buscar por #, operador, fecha..."
-              className="pl-9"
+              className="pl-9 text-gray-700"
             />
           </div>
         </div>
@@ -373,7 +373,7 @@ return ( <div className="p-8 max-w-7xl mx-auto">
         const badgeColor = getStatusBadgeColor(closure.totalDifference);
 
         return (
-          <button
+          <div
             key={closure.closureNumber}
             onClick={() => {
               setSelectedClosure(closure);
@@ -413,7 +413,7 @@ return ( <div className="p-8 max-w-7xl mx-auto">
 
               </div>
             </div>
-          </button>
+          </div>
         );
       })}
     </div>

@@ -15,30 +15,56 @@ import {
 } from "lucide-react";
 
 export default function LeftPanel({ setView }) {
-    const { logout } = useAuth(); // ← Obtener función de logout
+    const { logout } = useAuth();
+
+    const role = "cajero";
 
     const menuItems = [
-        { title: "Inicio", icon: Home, view: "home", children: null },
-        { title: "Operacion de Caja", icon: DollarSign, view: null, children: [{ title: "Registrar movimiento", view: "movimientoCaja" },{title: "Realizar Cierre", view:"cierre"}, {title:"Historial de cierres", view:"closeHistory"}, {title:"Saldos Iniciales", view:"saldosIniciales"}] },
-        { title: "Administrar usuarios", icon: Users, view: null, children: [{ title: "Registrar usuario", view: "registrarUsuario" }, { title: "Administrar permisos", view: null }, { title: "Administrar roles", view: "administrarRoles" }] },
-        { title: "Reportes y analisis", icon: BarChart3, view: "reports", children: null },
-        { title: "Alertas e inconsistencias", icon: AlertTriangle, view: "alerts", children: [{title:"Parametros de alertas",view:"alertParameter"}] },
-        { title: "Medios de pago", icon: CreditCard, view: "mediosPago", children: null },
-        { title: "Configuracion del negocio", icon: Settings, view: "settings", children: null },
-        { title: "Predicciones / inteligencia", icon: Brain, view: "ai", children: null }
+        { title: "Inicio", icon: Home, view: "home", children: null, roles: ["admin", "cajero", "usuario"] },
+        { 
+            title: "Operacion de Caja", 
+            icon: DollarSign, 
+            view: null, 
+            roles: ["admin", "cajero"],
+            children: [
+                { title: "Registrar movimiento", view: "movimientoCaja", roles: ["admin", "cajero"] },
+                { title: "Realizar Cierre", view:"cierre", roles: ["admin", "cajero"] },
+                { title:"Historial de cierres", view:"closeHistory", roles: ["admin"] },
+                { title:"Saldos Iniciales", view:"saldosIniciales", roles: ["admin"] }
+            ] 
+        },
+        { 
+            title: "Administrar usuarios", 
+            icon: Users, 
+            view: null, 
+            roles: ["admin"],
+            children: [
+                { title: "Registrar usuario", view: "registrarUsuario", roles: ["admin"] },
+                { title: "Administrar permisos", view: null, roles: ["admin"] },
+                { title: "Administrar roles", view: "administrarRoles", roles: ["admin"] }
+            ] 
+        },
+        { title: "Reportes y analisis", icon: BarChart3, view: "reports", children: null, roles: ["admin"] },
+        { 
+            title: "Alertas e inconsistencias", 
+            icon: AlertTriangle, 
+            view: null, 
+            roles: ["admin"],
+            children: [
+                {title:"Parametros de alertas", view:"alertParameter", roles: ["admin"]},
+                {title:"Historial de alertas", view:"alertHistory", roles: ["admin"]}
+            ]
+        },
+        { title: "Medios de pago", icon: CreditCard, view: "mediosPago", children: null, roles: ["admin"] },
+        { title: "Configuracion del negocio", icon: Settings, view: "settings", children: null, roles: ["admin"] },
     ];
 
     const [openIndex, setOpenIndex] = useState(null);
-
-    const toggle = (index) => {
-        setOpenIndex(openIndex === index ? null : index);
-    };
+    const toggle = (index) => setOpenIndex(openIndex === index ? null : index);
 
     const handleLogout = () => {
         const confirmed = window.confirm("¿Está seguro que desea cerrar sesión?");
-        if (confirmed) {
-            logout();
-        }
+        if (confirmed) logout();
     };
 
     return (
@@ -57,48 +83,50 @@ export default function LeftPanel({ setView }) {
             </div>
 
             <div>
-                {menuItems.map((item, index) => {
-                    const Icon = item.icon;
-                    const isOpen = openIndex === index;
+                {menuItems
+                    .filter(item => item.roles.includes(role)) // ⬅️ FILTRA POR ROL
+                    .map((item, index) => {
+                        const Icon = item.icon;
+                        const isOpen = openIndex === index;
 
-                    return (
-                        <div key={index}>
-                            <div
-                                onClick={() => {
-                                    toggle(index);
-                                    if (!(item.view == null)) {
-                                        setView(item.view);
-                                    }
-                                }}
-                                className="flex items-center justify-between text-sm text-white p-3 cursor-pointer hover:bg-[#0037a3] transition-colors"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <Icon size={20} />
-                                    <span>{item.title}</span>
+                        return (
+                            <div key={index}>
+                                <div
+                                    onClick={() => {
+                                        toggle(index);
+                                        if (item.view) setView(item.view);
+                                    }}
+                                    className="flex items-center justify-between text-sm text-white p-3 cursor-pointer hover:bg-[#0037a3] transition-colors"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <Icon size={20} />
+                                        <span>{item.title}</span>
+                                    </div>
+
+                                    {item.children && (
+                                        isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />
+                                    )}
                                 </div>
-                                {item.children && (
-                                    isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />
+
+                                {isOpen && item.children && (
+                                    <div className="ml-10 space-y-1">
+                                        {item.children
+                                            .filter(child => child.roles.includes(role)) // ⬅️ FILTRA SUBMENÚ POR ROL
+                                            .map((child, i) => (
+                                                <span
+                                                    key={i}
+                                                    onClick={() => setView(child.view)}
+                                                    className="block text-xs text-gray-200 p-2 cursor-pointer hover:text-white"
+                                                >
+                                                    {child.title}
+                                                </span>
+                                            ))
+                                        }
+                                    </div>
                                 )}
                             </div>
-
-                            {isOpen && item.children && (
-                                <div className="ml-10 space-y-1">
-                                    {item.children.map((child, i) => (
-                                        <span
-                                            key={i}
-                                            onClick={() => {
-                                                setView(child.view)
-                                            }}
-                                            className="block text-xs text-gray-200 p-2 cursor-pointer hover:text-white"
-                                        >
-                                            {child.title}
-                                        </span>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    );
-                })}
+                        );
+                    })}
             </div>
 
             <div
