@@ -1,7 +1,9 @@
 import { app, Menu, BrowserWindow, globalShortcut } from "electron";
 import path from "path";
 import { fileURLToPath } from "url";
-import { setupAuthHandlers } from './ipc/authHandlers.js';
+import { setupAuthHandlers } from "./ipc/authHandlers.js";
+import { setupUserHandlers } from "./ipc/userHandlers.js";
+import { setupRoleHandlers } from "./ipc/roleHandlers.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,6 +31,8 @@ const createWindow = () => {
 
 app.whenReady().then(() => {
   setupAuthHandlers();
+  setupUserHandlers();
+  setupRoleHandlers();
   createWindow();
 
   // Registrar Ctrl + Q
