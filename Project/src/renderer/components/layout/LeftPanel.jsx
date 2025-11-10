@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAuth } from "../auth/AuthContext";
 import {
     Home,
     DollarSign,
@@ -14,6 +15,7 @@ import {
 } from "lucide-react";
 
 export default function LeftPanel({ setView }) {
+    const { logout } = useAuth(); // ← Obtener función de logout
 
     const menuItems = [
         { title: "Inicio", icon: Home, view: "home", children: null },
@@ -30,6 +32,13 @@ export default function LeftPanel({ setView }) {
 
     const toggle = (index) => {
         setOpenIndex(openIndex === index ? null : index);
+    };
+
+    const handleLogout = () => {
+        const confirmed = window.confirm("¿Está seguro que desea cerrar sesión?");
+        if (confirmed) {
+            logout();
+        }
     };
 
     return (
@@ -73,8 +82,7 @@ export default function LeftPanel({ setView }) {
                             </div>
 
                             {isOpen && item.children && (
-                                <div
-                                    className="ml-10 space-y-1">
+                                <div className="ml-10 space-y-1">
                                     {item.children.map((child, i) => (
                                         <span
                                             key={i}
@@ -93,7 +101,10 @@ export default function LeftPanel({ setView }) {
                 })}
             </div>
 
-            <div className="mt-auto p-3 flex items-center gap-3 text-white cursor-pointer hover:bg-red-600 hover:text-red-200 transition-colors">
+            <div 
+                onClick={handleLogout}
+                className="mt-auto p-3 flex items-center gap-3 text-white cursor-pointer hover:bg-red-600 hover:text-red-200 transition-colors"
+            >
                 <LogOut size={20} />
                 <span>Cerrar sesión</span>
             </div>
