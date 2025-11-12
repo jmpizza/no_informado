@@ -25,6 +25,8 @@ dist-ssr
 *.sw?
 
 /dist-react
+/dist-electron
+
 /src/generated/prisma
 
 /src/generated/prisma
