@@ -1,6 +1,6 @@
 // App.jsx - CORREGIDO
 import { useState } from "react";
-import { AuthProvider, useAuth } from "./renderer/components/auth/AuthContext"; // ✅ Agregar useAuth aquí
+import { AuthProvider, useAuth } from "./renderer/components/auth/authContext"; // ✅ Agregar useAuth aquí
 import Login from "./renderer/components/auth/Login";
 import Dashboard from "./renderer/components/layout/Dashboard";
 import LeftPanel from "./renderer/components/layout/LeftPanel";

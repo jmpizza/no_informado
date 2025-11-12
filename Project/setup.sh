@@ -65,6 +65,7 @@ fi
 ## === CONFIGURACIÓN DEL PROYECTO (a completar) === ##
 echo "🧱 Inicializando proyecto con npm..."
 npm install
+npm ./prisma/seed.js # Crear el usuario default
 
 echo "📂 Creando estructura de carpetas..."
 mkdir -p src config scripts
