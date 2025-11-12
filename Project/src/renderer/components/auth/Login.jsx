@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAuth } from "./authContext";
+import { useAuth } from "./AuthContext";
 
 export default function Login() {
     const [cedula, setCedula] = useState("");
