@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAuth } from "../auth/AuthContext";
+import { useAuth } from "../auth/authContext.jsx";
 import {
     Home,
     DollarSign,
@@ -101,7 +101,7 @@ export default function LeftPanel({ setView }) {
                 })}
             </div>
 
-            <div 
+            <div
                 onClick={handleLogout}
                 className="mt-auto p-3 flex items-center gap-3 text-white cursor-pointer hover:bg-red-600 hover:text-red-200 transition-colors"
             >
