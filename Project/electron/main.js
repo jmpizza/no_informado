@@ -1,10 +1,10 @@
 import { app, Menu, BrowserWindow, globalShortcut } from "electron";
 import path from "path";
 import { fileURLToPath } from "url";
-import { setupAuthHandlers } from "./ipc/authHandlers.js";
-import { setupUserHandlers } from "./ipc/userHandlers.js";
-import { setupRoleHandlers } from "./ipc/roleHandlers.js";
-import { setupPaymentMethodHandlers } from "./ipc/paymentMethodHandlers.js";
+import { setupAuthHandlers } from "./ipc/auth.handler.js";
+import { setupUserHandlers } from "./ipc/user.handler.js";
+import { setupRoleHandlers } from "./ipc/role.handler.js";
+import { setupPaymentMethodHandlers } from "./ipc/paymentMethod.handler.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
