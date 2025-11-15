@@ -50,6 +50,19 @@ export function AuthProvider({ children }) {
         }
     };
 
+    const createUser = async (userData) => {
+        try {
+            if (!window.api || !window.api.createUser) {
+                return { success: false, error: 'Error de configuración de la aplicación' };
+            }
+
+            const result = await window.api.createUser(userData);
+            return result;
+        } catch (error) {
+            return { success: false, error: 'Error al crear usuario. Intente nuevamente.' };
+        }
+    };
+
     const logout = () => {
         setUser(null);
         localStorage.removeItem('user');
@@ -59,6 +72,7 @@ export function AuthProvider({ children }) {
         user,
         login,
         logout,
+        createUser,
         loading
     };
 

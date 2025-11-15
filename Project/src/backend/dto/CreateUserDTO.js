@@ -1,3 +1,5 @@
+import { ValidationException } from "../exceptions/ValidationException.js";
+
 export default class CreateUserDTO {
   constructor(data) {
     this.id = data.id;
@@ -11,7 +13,7 @@ export default class CreateUserDTO {
   validate(){
     const errors = [];
 
-    if (!this.id || this.id.trim().length === 0) {
+    if (!this.id || this.id < 0) {
       errors.push("ID es requerido");
     }
 
