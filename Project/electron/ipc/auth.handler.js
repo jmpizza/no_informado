@@ -1,52 +1,20 @@
 import { ipcMain } from "electron";
 import DatabaseSingle from "../db/DatabaseSingle.js";
-import bcrypt from "bcryptjs";
+import AuthService from "../../src/backend/services/AuthService.js";
+import UserRepository from "../../src/backend/repositories/UserRepository.js";
 
 export function setupAuthHandlers() {
-  ipcMain.handle("auth:login", async (event, { id, password }) => {
+  const db = DatabaseSingle.getInstance().prisma;
+  const userRepository = new UserRepository(db);
+  const authService = new AuthService(userRepository);
+
+  ipcMain.handle("auth:login", async (event, data) => {
     try {
-      const db = DatabaseSingle.getInstance().prisma;
-
-      const userId = parseInt(id, 10);
-
-      if (isNaN(userId)) {
-        return { success: false, error: "ID inválido" };
-      }
-
-      const user = await db.user.findUnique({
-        where: { id: userId },
-        include: { rol: true },
-      });
-
-      if (!user) {
-        return { success: false, error: "Usuario no encontrado" };
-      }
-
-      if (user.status === false) {
-        return { success: false, error: "Usuario inactivo" };
-      }
-
-      const passwordMatch = await bcrypt.compare(password, user.password);
-
-      if (!passwordMatch) {
-        return { success: false, error: "Contraseña incorrecta" };
-      }
-
-      return {
-        success: true,
-        user: {
-          id: user.id,
-          name: user.name,
-          last_name: user.last_name,
-          email: user.email,
-          rol: user.rol.name,
-          rol_id: user.rol_id,
-          isTemporary: false
-        },
-      };
-    } catch (err) {
-      console.error("Error en login:", err);
-      return { success: false, error: "Error del servidor" };
+      const { id, password } = data;
+      const user = await authService.AuthUser(id, password);
+      return { success: true, user };
+    } catch (error) {
+      return { success: false, error: error.message };
     }
   });
 }

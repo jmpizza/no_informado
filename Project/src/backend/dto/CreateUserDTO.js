@@ -9,7 +9,7 @@ export default class CreateUserDTO {
   }
 
   validate(){
-    const errors = []
+    const errors = [];
 
     if (!this.id || this.id.trim().length === 0) {
       errors.push("ID es requerido");

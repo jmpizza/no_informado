@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import CreateUserDTO from "../dto/CreateUserDTO.js";
-import { ValidationException } from "../exceptions/ValidationExeption.js";
+import { ValidationException } from "../exceptions/ValidationException.js";
 
 
 export default class UserService {
@@ -40,24 +40,5 @@ export default class UserService {
             status: true
         };
         return await this.userRepository.create(userData);
-    }
-
-    async authenticateUser(id, password) {
-        const user = await this.userRepository.findById(id);
-
-        if (!user) {
-            throw new ValidationException("Usuario no encontrado");
-        }
-
-        if (!user.status) {
-            throw new ValidationException("Usuario inactivo");
-        }
-
-        const isValid = await bcrypt.compare(password, user.password);
-        if (!isValid) {
-            throw new ValidationException("Contraseña incorrecta");
-        }
-
-        return user;
     }
 }
