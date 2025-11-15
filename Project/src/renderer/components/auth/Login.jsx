@@ -20,7 +20,6 @@ export default function Login() {
             if (!result.success) {
                 setError(result.error || "Error al iniciar sesión");
             }
-            // Si es exitoso, el AuthContext y ProtectedRoute se encargan del resto
         } catch (err) {
             setError("Error de conexión. Intente nuevamente.");
         } finally {

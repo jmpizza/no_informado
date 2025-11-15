@@ -54,7 +54,7 @@ export default function RegistrarUsuario() {
                             size={60}
                         />
                         <div>
-                            <span className="text-black flex items-center font-bold text-lg">
+                            <span className="text-black flex items-center font-semibold text-lg">
                                 Registrar nuevo usuario
                             </span>
                             <span className="flex items-center text-gray-700 text-sm">
