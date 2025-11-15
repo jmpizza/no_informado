@@ -74,7 +74,8 @@ goto esperar_pg
 REM === CONFIGURACIÓN DEL PROYECTO ===
 echo 🧱 Inicializando proyecto con npm...
 
-npm install
+cd Proyect
+npm instal
 node .\prisma\seed.js
 
 echo 📂 Creando estructura de carpetas...

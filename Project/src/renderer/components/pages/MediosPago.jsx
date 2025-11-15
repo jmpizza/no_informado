@@ -17,7 +17,6 @@ export default function MediosPago() {
     const [activeTab, setActiveTab] = useState("add");
 
     // ✅ Reemplazado Modal por Popover 
-    // const [showModal, setShowModal] = useState(false);
     const [showPopover, setShowPopover] = useState(false);
 
     const iconOptions = [

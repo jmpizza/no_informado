@@ -1,11 +1,12 @@
 // App.jsx - CORREGIDO
 import { useState } from "react";
-import { AuthProvider, useAuth } from "./renderer/components/auth/AuthContext"; 
+import { AuthProvider, useAuth } from "./renderer/components/auth/authContext";
 import Login from "./renderer/components/auth/Login";
 import Dashboard from "./renderer/components/layout/Dashboard";
 import LeftPanel from "./renderer/components/layout/LeftPanel";
 import MediosPago from "./renderer/components/pages/MediosPago";
 import RegistrarUsuario from "./renderer/components/auth/RegistrarUsuario";
+import MovimientoCaja from "./renderer/components/pages/MovimientoCaja";
 
 function AppContent() {
     const [view, setView] = useState("dashboard");
@@ -22,6 +23,7 @@ function AppContent() {
                         {view === "dashboard" && <Dashboard />}
                         {view === "mediosPago" && <MediosPago />}
                         {view === "registrarUsuario" && <RegistrarUsuario />}
+                        {view === "movimientoCaja" && <MovimientoCaja />}
                     </div>
                 </div>
             )}
