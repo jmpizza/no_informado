@@ -156,7 +156,7 @@ export default function MovimientoCaja() {
                             </div>
                             <div
                                 onClick={handleSubmit}
-                                className="bg-white border-gray-400 border text-black py-2 rounded-lg w-3/12 hover:bg-blue-700 transition"
+                                className="bg-white border-gray-400 border text-black py-2 rounded-lg w-3/12 hover:bg-gray-700 hover:text-white transition"
                             >
                                 Limpiar
                             </div>
