@@ -1,4 +1,4 @@
-import DatabaseSingle from "../../electron/db/DatabaseSingle.js"
+import DatabaseSingle from "../../../electron/db/DatabaseSingle.js"
 
 const conexionDB = DatabaseSingle.getInstance().prisma;
 

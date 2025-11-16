@@ -1,4 +1,4 @@
-import DatabaseSingle from "../../electron/db/DatabaseSingle.js"
+import DatabaseSingle from "../../../electron/db/DatabaseSingle.js"
 
 const conexionDB = DatabaseSingle.getInstance().prisma;
 
@@ -8,7 +8,6 @@ export async function insertMovement(payloadMovement){
 
     const movement = await conexionDB.movement.create({
         data: {
-            id: payloadMovement.id,
             ammount: payloadMovement.ammount,
             type: payloadMovement.type,
             closing_id: payloadMovement.closing_id,
@@ -20,6 +19,7 @@ export async function insertMovement(payloadMovement){
 }
 
 export async function getTodayMovements(){
+    
     const today = new Date()
     today.setHours(0, 0, 0, 0) //Dia de hoy, 00:00:00:000
 
@@ -31,6 +31,7 @@ export async function getTodayMovements(){
         }
     });
 
+
     return todayMovements
     }
 
@@ -39,7 +40,6 @@ export async function getTodayMovements(){
 export async function addClosing(payloadClosing) {
     const closing = await conexionDB.closing.create({
             data: {
-            id: 3,
             total: payloadClosing.total,
             comments: payloadClosing.comments,
             expected_balance: payloadClosing.expected_balance,
@@ -65,11 +65,13 @@ export async function getLastClosing(){
 //Method payment
 
 export async function getPaymentMethod(paymentMethod) {
-    const payment = await conexionDB.user.findUnique({
+    
+    const payment = await conexionDB.payment_method.findUnique({
       where: {
         id: paymentMethod,
       }
     })
+
 
     return payment
 }
