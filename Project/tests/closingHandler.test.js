@@ -14,7 +14,7 @@ const goodOperator = {
 
 test("Verificacion de Operador", async () => {
   expect(await isOperador(5)).toBe(false)
-  expect(await isOperador(goodOperator.id)).toBe(true)
+  expect(await isOperador(goodOperator)).toBe(true)
 })
 
 //12 de noviembre hoy

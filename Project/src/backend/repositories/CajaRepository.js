@@ -1,9 +1,6 @@
-import DatabaseSingle from "../../../electron/db/DatabaseSingle.js"
+import DatabaseSingle  from "../../../electron/db/DatabaseSingle.js"
 
 const conexionDB = DatabaseSingle.getInstance().prisma;
-
-
-
 export async function insertMovement(payloadMovement){
 
     const movement = await conexionDB.movement.create({

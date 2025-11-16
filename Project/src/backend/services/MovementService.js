@@ -1,14 +1,12 @@
 import { getPaymentMethod, insertMovement} from "../repositories/CajaRepository.js"
 import { findUser } from "../repositories/MovementUserRepository.js"
 
-async function isCajero(userId){
+async function isCajero(usuarioRol){
     const cajeroRol = 2
-    const usuarioRol = await findUser(userId)
 
     if ( usuarioRol == null){
       return false
     }
-    
     const identificacionDeRol = usuarioRol.rol_id
   
     if (identificacionDeRol == cajeroRol){
@@ -34,7 +32,7 @@ async function isAbovezero(ammount){
     return ammount > 0
   }
 
-async function validMovement(payloadMovement){
+async function validMovement(payloadMovement, user){
   
   if (typeof(payloadMovement) != typeof({})){
     return false
@@ -42,13 +40,14 @@ async function validMovement(payloadMovement){
   if (await isAbovezero(payloadMovement.ammount) == false ){
     return false
   }
-  if (await isCajero(payloadMovement.user_id) == false){
-    return false
+  if (payloadMovement.user_id != user.id){
+    return false 
   }
   
-  if (await doPaymentMethodExist(payloadMovement.payment_method_id) == false){
+  if (await isCajero(user) == false){
     return false
   }
+
   return true
 }
 
@@ -61,4 +60,4 @@ async function Movement(payloadMovement) {
 }
 
 
-export {isCajero, doPaymentMethodExist, validMovement, isAbovezero}
+export {isCajero, doPaymentMethodExist, validMovement, isAbovezero, movement}
