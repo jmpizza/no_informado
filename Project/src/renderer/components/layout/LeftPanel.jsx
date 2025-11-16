@@ -20,7 +20,7 @@ export default function LeftPanel({ setView }) {
     const menuItems = [
         { title: "Inicio", icon: Home, view: "home", children: null },
         { title: "Operacion de Caja", icon: DollarSign, view: null, children: [{ title: "Registrar movimiento", view: "movimientoCaja" }] },
-        { title: "Administrar usuarios", icon: Users, view: null, children: [{ title: "Registrar usuario", view: "registrarUsuario" }, { title: "Administrar permisos", view: null }, { title: "Administrar roles", view: null }] },
+        { title: "Administrar usuarios", icon: Users, view: null, children: [{ title: "Registrar usuario", view: "registrarUsuario" }, { title: "Administrar permisos", view: null }, { title: "Administrar roles", view: "administrarRoles" }] },
         { title: "Reportes y analisis", icon: BarChart3, view: "reports", children: null },
         { title: "Alertas e inconsistencias", icon: AlertTriangle, view: "alerts", children: null },
         { title: "Medios de pago", icon: CreditCard, view: "mediosPago", children: null },
@@ -42,7 +42,7 @@ export default function LeftPanel({ setView }) {
     };
 
     return (
-        <div className="bg-[#1c398e] min-h-screen flex flex-col">
+        <div className="bg-[#1c398e] fixed left-0 top-0 w-64 h-screen flex flex-col">
 
             <div className="flex w-64 p-4 bg-[#1c398e] text-white gap-5">
                 <div className="h-20 flex gap-4 items-center justify-center w-full">

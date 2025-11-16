@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { ArrowUp, AlertCircle } from "lucide-react";
 
 export default function MovimientoCaja() {
-
     const [selected, setSelected] = useState(null);
     const [monto, setMonto] = useState("");
     const [desc, setDesc] = useState("");
+
+    const [metodoPago, setMetodoPago] = useState("");     // Seleccionado
+    const [metodosPago, setMetodosPago] = useState([]);   // Lista de métodos
 
     const [saldoActual, setSaldoActual] = useState(0);
     const [saldoDespues, setSaldoDespues] = useState(0);
@@ -15,18 +17,21 @@ export default function MovimientoCaja() {
         { id: "egreso", titulo: "Egreso", desc: "Salida de dinero a caja", color: "red" },
     ];
 
-    const handleClick = (id) => {
-        setSelected(id);
-    };
+    // Obtener métodos de pago simulados
+    useEffect(() => {
+        const dataSimulada = [
+            { id: 1, nombre: "Efectivo" },
+            { id: 2, nombre: "Nequi" },
+            { id: 3, nombre: "Daviplata" },
+            { id: 4, nombre: "Transferencia" },
+        ];
 
+        setTimeout(() => {
+            setMetodosPago(dataSimulada);
+        }, 500);
+    }, []);
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-
-        alert(`Registro de movimiento agregado: ${name}`);
-    };
-
-    // Simulación de consulta a la base de datos (reemplaza esto por tu API real)
+    // Obtener saldos simulados
     useEffect(() => {
         const data = {
             saldoAntes: 120000,
@@ -37,7 +42,7 @@ export default function MovimientoCaja() {
         setSaldoDespues(data.saldoNuevo);
     }, []);
 
-    // Cada vez que cambia el monto o el tipo de movimiento, recalcular saldoDespués
+    // Recalcular saldo con monto + tipo de movimiento
     useEffect(() => {
         const valor = Number(monto) || 0;
 
@@ -51,19 +56,32 @@ export default function MovimientoCaja() {
     }, [monto, selected, saldoActual]);
 
 
+    const handleSubmit = () => {
+        console.log("Tipo:", selected);
+        console.log("Método de pago:", metodoPago);
+        console.log("Monto:", monto);
+        console.log("Descripción:", desc);
+    };
+
+
     return (
         <div className="flex flex-col min-h-screen bg-gray-100">
             <div className="flex flex-col items-center justify-center flex-1 p-6">
-
                 <div className="bg-white flex flex-col shadow-2xl rounded-2xl w-full max-w-3xl">
 
                     <div className="grid p-8">
-                        <span className="text-black font-semibold mb-2">Registrar Movimiento de Caja</span>
-                        <span className=" mb-5 flex items-center text-gray-700 text-sm">
+                        <span className="text-black font-semibold mb-2">
+                            Registrar Movimiento de Caja
+                        </span>
+
+                        <span className="mb-5 flex items-center text-gray-700 text-sm">
                             Complete el formulario para registrar un ingreso o egreso de caja
                         </span>
 
-                        <span className="text-sm text-black font-semibold mb-2">Tipo de Movimiento *</span>
+                        {/* Tipo de movimiento */}
+                        <span className="text-sm text-black font-semibold mb-2">
+                            Tipo de Movimiento *
+                        </span>
 
                         <div className="flex flex-row gap-4 w-full">
                             {opciones.map((op) => {
@@ -72,12 +90,9 @@ export default function MovimientoCaja() {
                                 return (
                                     <div
                                         key={op.id}
-                                        onClick={() => handleClick(op.id)}
+                                        onClick={() => setSelected(op.id)}
                                         className={`w-full rounded-xl p-6 flex flex-col items-center cursor-pointer border-2 transition-all
-                                            ${activo
-                                                ? `border-${op.color}-500`
-                                                : "bg-white border-gray-300"
-                                            }`}
+                                            ${activo ? `border-${op.color}-500` : "border-gray-300"}`}
                                     >
                                         <div
                                             className={`mb-3 rounded-full border-4 p-2
@@ -91,7 +106,7 @@ export default function MovimientoCaja() {
 
                                         <h2
                                             className={`text-lg font-semibold
-                                            ${activo ? `text-${op.color}-700` : "text-gray-800"}`}
+                                                ${activo ? `text-${op.color}-700` : "text-gray-800"}`}
                                         >
                                             {op.titulo}
                                         </h2>
@@ -102,9 +117,31 @@ export default function MovimientoCaja() {
                             })}
                         </div>
 
+                        {/* Método de pago */}
+                        <div className="flex flex-col md:flex-row items-center gap-4 mt-4">
+                            <span className="text-black text-sm font-bold">
+                                Método de pago *
+                            </span>
+
+                            <select
+                                value={metodoPago}
+                                onChange={(e) => setMetodoPago(e.target.value)}
+                                className="w-full md:w-auto flex-1 text-black border border-gray-400 rounded-xl p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                <option value="">Seleccione...</option>
+
+                                {metodosPago.map((item) => (
+                                    <option key={item.id} value={item.nombre}>
+                                        {item.nombre}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
 
                         {/* Monto */}
-                        <span className="text-black font-semibold text-sm mt-4 mb-2">Monto *</span>
+                        <span className="text-black font-semibold text-sm mt-4 mb-2">
+                            Monto *
+                        </span>
 
                         <input
                             className="w-full text-black border border-gray-400 rounded-xl p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -113,7 +150,6 @@ export default function MovimientoCaja() {
                             value={monto}
                             onChange={(e) => setMonto(e.target.value)}
                         />
-
 
                         {/* Descripción */}
                         <span className="text-black font-semibold text-sm mt-4 mb-2">Descripción</span>
@@ -126,8 +162,7 @@ export default function MovimientoCaja() {
                             onChange={(e) => setDesc(e.target.value)}
                         />
 
-
-                        {/* CUADRO DE SALDOS */}
+                        {/* Saldos */}
                         <div className="grid grid-cols-[min-content_1fr] grid-rows-[min-content_1fr] border-2 border-gray-300 rounded-xl mt-6">
                             <div className="p-2">
                                 <AlertCircle className="w-4 h-4 text-gray-500" />
@@ -146,7 +181,7 @@ export default function MovimientoCaja() {
                             </span>
                         </div>
 
-
+                        {/* Botones */}
                         <div className="w-full pt-5 pb-6 flex text-center flex-row gap-4">
                             <div
                                 onClick={handleSubmit}
@@ -154,8 +189,9 @@ export default function MovimientoCaja() {
                             >
                                 Confirmar
                             </div>
+
                             <div
-                                onClick={handleSubmit}
+                                onClick={() => { setSelected(null); setMonto(""); setDesc(""); setMetodoPago(""); }}
                                 className="bg-white border-gray-400 border text-black py-2 rounded-lg w-3/12 hover:bg-gray-700 hover:text-white transition"
                             >
                                 Limpiar
