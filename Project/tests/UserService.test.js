@@ -1,4 +1,3 @@
-// UserService.test.js
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import UserService from "../src/backend/services/UserService.js";
 import { ValidationException } from "../src/backend/exceptions/ValidationException.js";
