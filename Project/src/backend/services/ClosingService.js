@@ -1,6 +1,6 @@
-import { expect } from "vitest"
-import { getLastClosing, getTodayMovements } from "../repositories/CajaRepository.js"
-import { findUser } from "../repositories/MovementUserRepository.js"
+//import { expect } from "vitest"  
+//import { getLastClosing, getTodayMovements } from "../repositories/CajaRepository.js"
+//import { findUser } from "../repositories/MovementUserRepository.js"
 
 export async function isOperador(usuarioRol){
     const cajeroRol = 3
@@ -80,4 +80,4 @@ export async function commonClosingAlerts(potentialClosing, percentage){
 }
 
 
-export { isCajero }
+//export { isCajero }

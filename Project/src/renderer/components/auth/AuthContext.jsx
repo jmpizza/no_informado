@@ -17,7 +17,7 @@ export function AuthProvider({ children }) {
             if (savedUser) {
                 setUser(JSON.parse(savedUser));
             }
-        } catch (error) {
+        } catch (error) { // eslint-disable-line no-unused-vars
             // Ignorar errores silenciosamente
         } finally {
             setLoading(false);
@@ -58,7 +58,7 @@ export function AuthProvider({ children }) {
 
             const result = await window.api.createUser(userData);
             return result;
-        } catch (error) {
+        } catch (error) { // eslint-disable-line no-unused-vars
             return { success: false, error: 'Error al crear usuario. Intente nuevamente.' };
         }
     };

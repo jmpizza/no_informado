@@ -68,11 +68,13 @@ async function addMovimiento(payload) {
     payload.amount = (-1)*payload.amount
   } 
 
+  // eslint-disable-next-line no-unused-vars
   const crea = await conexionDB.movement.create(payload)
 }
 
 
 async function main() {
+  const payload = {} // Completar con datos
   addMovimiento(payload)
 }
 

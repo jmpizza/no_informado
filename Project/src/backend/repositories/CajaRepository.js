@@ -3,6 +3,7 @@ import DatabaseSingle  from "../../../electron/db/DatabaseSingle.js"
 const conexionDB = DatabaseSingle.getInstance().prisma;
 export async function insertMovement(payloadMovement){
 
+    // eslint-disable-next-line no-unused-vars
     const movement = await conexionDB.movement.create({
         data: {
             ammount: payloadMovement.ammount,
@@ -35,6 +36,8 @@ export async function getTodayMovements(){
 //Closings
 
 export async function addClosing(payloadClosing) {
+
+    // eslint-disable-next-line no-unused-vars
     const closing = await conexionDB.closing.create({
             data: {
             total: payloadClosing.total,
@@ -74,6 +77,7 @@ export async function getPaymentMethod(paymentMethod) {
 }
 
 export async function disablePaymentMethod(paymentId) {
+    // eslint-disable-next-line no-unused-vars
     const paymentMethod = await conexionDB.payment_method.update({
         where: {
             id: paymentId,
@@ -85,6 +89,7 @@ export async function disablePaymentMethod(paymentId) {
 }
 
 export async function enablePaymentMethod(paymentId) {
+    // eslint-disable-next-line no-unused-vars
     const paymentMethod = await conexionDB.payment_method.update({
         where: {
             id: paymentId,

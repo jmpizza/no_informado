@@ -81,7 +81,7 @@ export default function UserRegister() {
             } else {
                 setError(result.error || "Error al crear usuario");
             }
-        } catch (err) {
+        } catch (err) { // eslint-disable-line no-unused-vars
             setError("Error al crear usuario. Intente nuevamente.");
         } finally {
             setLoading(false);

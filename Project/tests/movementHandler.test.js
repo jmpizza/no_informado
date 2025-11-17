@@ -1,5 +1,7 @@
 import { expect, test } from 'vitest'
-import {isCajero, doPaymentMethodExist, validMovement } from '../src/backend/services/MovementService.js'
+import {isCajero, validMovement } from '../src/backend/services/MovementService.js'
+// eslint-disable-next-line no-unused-vars
+import {doPaymentMethodExist} from '../src/backend/services/MovementService.js'
 
 const mockUser = {
     id:64,

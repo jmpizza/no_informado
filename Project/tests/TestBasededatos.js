@@ -5,6 +5,7 @@ async function main() {
   const conexionDB = DatabaseSingle.getInstance().prisma;
 
   // Crear un registro en la base de datos
+  // eslint-disable-next-line no-unused-vars
   const crea = await conexionDB.rol.create({
     data: {
       id: 1,

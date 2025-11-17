@@ -1,5 +1,5 @@
 import { getPaymentMethod, insertMovement} from "../repositories/CajaRepository.js"
-import { findUser } from "../repositories/MovementUserRepository.js"
+//import { findUser } from "../repositories/MovementUserRepository.js"
 
 async function isCajero(usuarioRol){
     const cajeroRol = 2
@@ -56,8 +56,9 @@ async function Movement(payloadMovement) {
     return false
   }
 
+  // eslint-disable-next-line no-unused-vars
   const movement = insertMovement(payloadMovement)
 }
 
 
-export {isCajero, doPaymentMethodExist, validMovement, isAbovezero, movement}
+export {isCajero, doPaymentMethodExist, validMovement, isAbovezero, Movement}
