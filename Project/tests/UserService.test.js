@@ -31,7 +31,7 @@ describe("UserService - CreateUser", () => {
     userService = new UserService(mockUserRepo, mockRoleRepo);
   });
 
-  it("debería crear usuario exitosamente", async () => {
+  it("Creacion de usuario exitosa", async () => {
     mockUserRepo.findById.mockResolvedValue(null);
     mockUserRepo.findByEmail.mockResolvedValue(null);
     mockRoleRepo.findById.mockResolvedValue({ id: 1 });
@@ -44,7 +44,7 @@ describe("UserService - CreateUser", () => {
     expect(bcrypt.hash).toHaveBeenCalledWith(validData.password, 10);
   });
 
-  it("debería rechazar usuario existente", async () => {
+  it("Rechazo por usuario existente", async () => {
     mockUserRepo.findById.mockResolvedValue({ id: validData.id });
 
     await expect(userService.CreateUser(validData)).rejects.toThrow(
@@ -52,7 +52,7 @@ describe("UserService - CreateUser", () => {
     );
   });
 
-  it("debería rechazar email duplicado", async () => {
+  it("Rechazo por email duplicado", async () => {
     mockUserRepo.findById.mockResolvedValue(null);
     mockUserRepo.findByEmail.mockResolvedValue({ email: validData.email });
 
@@ -61,7 +61,7 @@ describe("UserService - CreateUser", () => {
     );
   });
 
-  it("debería rechazar rol inexistente", async () => {
+  it("Rechazo por rol inexistente", async () => {
     mockUserRepo.findById.mockResolvedValue(null);
     mockUserRepo.findByEmail.mockResolvedValue(null);
     mockRoleRepo.findById.mockResolvedValue(null);
@@ -71,7 +71,7 @@ describe("UserService - CreateUser", () => {
     );
   });
 
-  it("debería rechazar datos inválidos", async () => {
+  it("Rechazo por datos inválidos", async () => {
     await expect(
       userService.CreateUser({ ...validData, password: "123" })
     ).rejects.toThrow(ValidationException);
