@@ -4,10 +4,11 @@
   "version": "0.0.0",
   "main": "./electron/main.js",
   "type": "module",
-  "prisma":{
+  "prisma": {
     "seed": "node prisma/seed.js"
   },
   "scripts": {
+    "test": "vitest",
     "dev:react": "vite",
     "dev:electron": "electron .",
     "dev": "npm run dev:react",
@@ -33,6 +34,8 @@
     "@eslint/js": "^9.25.0",
     "@tailwindcss/postcss": "^4.1.16",
     "@tailwindcss/vite": "^4.1.16",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
     "@vitejs/plugin-react": "^4.4.1",
     "autoprefixer": "^10.4.21",
     "concurrently": "^9.2.1",
@@ -46,6 +49,7 @@
     "prisma": "^6.18.0",
     "tailwindcss": "^4.1.16",
     "vite": "^6.4.1",
+    "vitest": "^4.0.9",
     "wait-on": "^9.0.1"
   }
 }

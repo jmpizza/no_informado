@@ -20,7 +20,7 @@ export default function Login() {
             if (!result.success) {
                 setError(result.error || "Error al iniciar sesión");
             }
-        } catch (err) {
+        } catch (err) { // eslint-disable-line no-unused-vars
             setError("Error de conexión. Intente nuevamente.");
         } finally {
             setLoading(false);

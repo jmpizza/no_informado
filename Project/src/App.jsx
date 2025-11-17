@@ -5,8 +5,9 @@ import Login from "./renderer/components/auth/Login";
 import Dashboard from "./renderer/components/layout/Dashboard";
 import LeftPanel from "./renderer/components/layout/LeftPanel";
 import MediosPago from "./renderer/components/pages/MediosPago";
-import RegistrarUsuario from "./renderer/components/auth/RegistrarUsuario";
 import MovimientoCaja from "./renderer/components/pages/MovimientoCaja";
+import UserRegister from "./renderer/components/auth/UserRegister";
+import AdministrarRoles from "./renderer/components/auth/AdministrarRoles";
 
 function AppContent() {
     const [view, setView] = useState("dashboard");
@@ -18,13 +19,18 @@ function AppContent() {
                 <Login />
             ) : (
                 <div className="flex h-screen w-screen">
+
                     <LeftPanel setView={setView} />
-                    <div className="bg-white flex-1 ">
+
+                    <div className="bg-white flex-1 ml-64">
                         {view === "dashboard" && <Dashboard />}
                         {view === "mediosPago" && <MediosPago />}
-                        {view === "registrarUsuario" && <RegistrarUsuario />}
+                        {view === "registrarUsuario" && <UserRegister />}
                         {view === "movimientoCaja" && <MovimientoCaja />}
+                        {view === "administrarRoles" && <AdministrarRoles />}
+
                     </div>
+
                 </div>
             )}
         </div>
