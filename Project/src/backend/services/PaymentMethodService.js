@@ -7,18 +7,18 @@ export default class PaymentMethodService {
     this.paymentMethodRepository = paymentMethodRepository;
   }
 
-  async createPaymentMethod(name, description) {
-    const dto = new CreatePaymentMethodDTO(name, description);
+  async createPaymentMethod(name, account_number) {
+    const dto = new CreatePaymentMethodDTO(name, account_number);
     dto.validate();
 
-    const existingMethod = await this.paymentMethodRepository.paymentMethodExists(name);
+    const existingMethod = await this.paymentMethodRepository.exists(name);
     if (existingMethod) {
       throw new ValidationException("El método de pago ya existe");
     }
 
     const paymentMethodData = {
       name: dto.name,
-      description: dto.description,
+      account_number: dto.account_number,
     };
 
     return await this.paymentMethodRepository.create(paymentMethodData);

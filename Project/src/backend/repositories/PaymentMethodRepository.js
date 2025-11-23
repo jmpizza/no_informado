@@ -4,7 +4,7 @@ export default class PaymentMethodRepository {
   }
 
   async findByName(name) {
-    return await this.db.payment_method.findUnique({
+    return await this.db.payment_method.findFirst({
       where: { name },
     });
   }
@@ -17,8 +17,9 @@ export default class PaymentMethodRepository {
   async create(paymentMethodData) {
     return await this.db.payment_method.create({
       data: {
-        ...paymentMethodData,
+        name: paymentMethodData.name,
         active: paymentMethodData.active ?? true,
+        account_number: paymentMethodData.account_number || null,
       },
     });
   }
@@ -31,26 +32,30 @@ export default class PaymentMethodRepository {
       select: {
         id: true,
         name: true,
-        description: true,
         active: true,
+        account_number: true,
       },
     });
   }
 
-  async update(name, paymentMethodData) {
+  async update(id, paymentMethodData) {
     return await this.db.payment_method.update({
-      where: { name },
+      where: { id },
       data: paymentMethodData,
     });
   }
 
   async updateStatus(name, status) {
-    return await this.update(name, { active: status });
+    const method = await this.findByName(name);
+    if (!method) {
+      throw new Error(`Payment method '${name}' not found`);
+    }
+    return await this.update(method.id, { active: status });
   }
 
-  async delete(name) {
+  async delete(id) {
     return await this.db.payment_method.delete({
-      where: { name },
+      where: { id },
     });
   }
 }

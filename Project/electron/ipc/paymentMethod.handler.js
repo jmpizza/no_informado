@@ -8,28 +8,32 @@ export function setupPaymentMethodHandlers() {
   const paymentMethodRepository = new PaymentMethodRepository(db);
   const paymentMethodService = new PaymentMethodService(paymentMethodRepository);
 
-  ipcMain.handle("paymentMethod:create", async(event, data) => {
+  ipcMain.handle("payment-method:create", async(event, paymentMethodData) => {
     try{
-      const paymentMethod = await paymentMethodService.createPaymentMethod(data);
-      return { success: true, user };
+      const paymentMethod = await paymentMethodService.createPaymentMethod(
+        paymentMethodData.name, 
+        paymentMethodData.account_number
+      );
+      return { success: true, data: paymentMethod };
     } catch (error) {
       return { success: false, error: error.message };
     }
   });
 
-  ipcMain.handle("paymentMethod:update", async (event, data) => {
+  ipcMain.handle("payment-method:updateStatus", async (event, { name, status }) => {
     try{
-      const updatedPaymentMethodStatus = await paymentMethodService.updatePaymentMethodStatus(data);
-      return { success: true, updatedPaymentMethodStatus };
+      const action = status ? "enable" : "disable";
+      const updatedPaymentMethod = await paymentMethodService.updatePaymentMethodStatus(name, action);
+      return { success: true, data: updatedPaymentMethod };
     } catch (error) {
       return { success: false, error: error.message };
     }
   });
   
-  ipcMain.handle("paymentMethod:getAll", async (event, data) => {
+  ipcMain.handle("payment-method:getAll", async (event, status) => {
     try{
-      const paymentMethods = await paymentMethodService.listPaymentMethods(data);
-      return { success: true, paymentMethods };
+      const paymentMethods = await paymentMethodService.listPaymentMethods(status);
+      return { success: true, data: paymentMethods };
     } catch (error) {
       return { success: false, error: error.message };
     }
