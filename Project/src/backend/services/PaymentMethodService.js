@@ -1,10 +1,3 @@
-import {
-  paymentMethodExists,
-  savePaymentMethod,
-  getPaymentMethods,
-  updatePaymentMethodStatus,
-} from "../repositories/PaymentMethodRepository.js";
-
 export default class PaymentMethodService {
   constructor(paymentMethodRepository) {
     this.paymentMethodRepository = paymentMethodRepository;
