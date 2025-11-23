@@ -5,68 +5,74 @@ import {
   updatePaymentMethodStatus,
 } from "../repositories/PaymentMethodRepository.js";
 
-function validatePaymentMethodName(name) {
-  const regex = /^[a-zA-Z0-9\sáéíóúÁÉÍÓÚñÑ]{3,50}$/;
-  return regex.test(name);
-}
-
-export async function registerPaymentMethod(name, description) {
-  if (!validatePaymentMethodName(name)) {
-    return { success: false, message: "Invalid name." };
+export default class PaymentMethodService {
+  constructor(paymentMethodRepository) {
+    this.paymentMethodRepository = paymentMethodRepository;
   }
 
-  const alreadyExists = await paymentMethodExists(name);
-  if (alreadyExists) {
-    return { success: false, message: "Payment method already exists." };
+  validatePaymentMethodName(name) {
+    const regex = /^[a-zA-Z0-9\sáéíóúÁÉÍÓÚñÑ]{3,50}$/;
+    return regex.test(name);
   }
 
-  const saved = await savePaymentMethod(name, description);
-  if (!saved) {
-    return { success: false, message: "Error saving payment method." };
+  async registerPaymentMethod(name, description) {
+    if (!this.validatePaymentMethodName(name)) {
+      return { success: false, message: "Invalid name." };
+    }
+
+    const alreadyExists = await this.paymentMethodRepository.paymentMethodExists(name);
+    if (alreadyExists) {
+      return { success: false, message: "Payment method already exists." };
+    }
+
+    const saved = await this.paymentMethodRepository.savePaymentMethod(name, description);
+    if (!saved) {
+      return { success: false, message: "Error saving payment method." };
+    }
+
+    return { success: true, message: "Payment method successfully registered." };
   }
 
-  return { success: true, message: "Payment method successfully registered." };
-}
+  async listPaymentMethods() {
+    try {
+      const methods = await this.paymentMethodRepository.getPaymentMethods();
 
-export async function listPaymentMethods() {
-  try {
-    const methods = await getPaymentMethods();
+      if (!methods || methods.length === 0) {
+        return {
+          success: false,
+          message: "No hay métodos de pago disponibles.",
+          data: null,
+        };
+      }
 
-    if (!methods || methods.length === 0) {
+      return {
+        success: true,
+        message: "Métodos de pago obtenidos correctamente.",
+        data: methods,
+      };
+    } catch (err) {
       return {
         success: false,
-        message: "No hay métodos de pago disponibles.",
+        message: `Error al obtener métodos de pago: ${err.message}`,
         data: null,
       };
+    }
+  }
+
+  async changePaymentMethodStatus(name, action) {
+    const status = action === "enable";
+
+    const updated = await this.paymentMethodRepository.updatePaymentMethodStatus(name, status);
+
+    if (!updated) {
+      return { success: false, message: "Could not update status." };
     }
 
     return {
       success: true,
-      message: "Métodos de pago obtenidos correctamente.",
-      data: methods,
-    };
-  } catch (err) {
-    return {
-      success: false,
-      message: `Error al obtener métodos de pago: ${err.message}`,
-      data: null,
+      message: action === "enable"
+        ? "Payment method enabled."
+        : "Payment method disabled.",
     };
   }
-}
-
-export async function changePaymentMethodStatus(name, action) {
-  const status = action === "enable";
-
-  const updated = await updatePaymentMethodStatus(name, status);
-
-  if (!updated) {
-    return { success: false, message: "Could not update status." };
-  }
-
-  return {
-    success: true,
-    message: action === "enable"
-      ? "Payment method enabled."
-      : "Payment method disabled.",
-  };
 }
