@@ -1,50 +1,54 @@
-import DatabaseSingle from "../../../electron/db/DatabaseSingle.js";
+export default class PaymentMethodRepository {
+  constructor(prismaClient) {
+    this.db = prismaClient;
+  }
 
-const dbConnection = DatabaseSingle.getInstance().prisma;
+  async findByName(name) {
+    return await this.db.payment_method.findUnique({
+      where: { name },
+    });
+  }
 
-export async function paymentMethodExists(name) {
-  const method = await dbConnection.payment_method.findUnique({
-    where: { name },
-  });
-  return !!method;
-}
+  async exists(name) {
+    const method = await this.findByName(name);
+    return !!method;
+  }
 
-export async function savePaymentMethod(name, description) {
-  try {
-    await dbConnection.payment_method.create({
+  async create(paymentMethodData) {
+    return await this.db.payment_method.create({
       data: {
-        name,
-        description: description || null,
-        active: true, // default active
+        ...paymentMethodData,
+        active: paymentMethodData.active ?? true,
       },
     });
-    return true;
-  } catch (error) {
-    console.error("Error saving payment method:", error);
-    return false;
   }
-}
 
-export async function getPaymentMethods() {
-  return await dbConnection.payment_method.findMany({
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      active: true,
-    },
-  });
-}
-
-export async function updatePaymentMethodStatus(name, status) {
-  try {
-    await dbConnection.payment_method.update({
-      where: { name },
-      data: { active: status },
+  async findAll(filters = {}) {
+    return await this.db.payment_method.findMany({
+      where: filters,
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        active: true,
+      },
     });
-    return true;
-  } catch (error) {
-    console.error("Error updating payment method status:", error);
-    return false;
+  }
+
+  async update(name, paymentMethodData) {
+    return await this.db.payment_method.update({
+      where: { name },
+      data: paymentMethodData,
+    });
+  }
+
+  async updateStatus(name, status) {
+    return await this.update(name, { active: status });
+  }
+
+  async delete(name) {
+    return await this.db.payment_method.delete({
+      where: { name },
+    });
   }
 }
