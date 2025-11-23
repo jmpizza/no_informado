@@ -9,6 +9,7 @@ import MovimientoCaja from "./renderer/components/pages/MovimientoCaja";
 import UserRegister from "./renderer/components/auth/UserRegister";
 import AdministrarRoles from "./renderer/components/auth/AdministrarRoles";
 import Cierre from "./renderer/components/pages/Ciere";
+import AlertParameter from "./renderer/components/pages/AlertParameter";
 
 function AppContent() {
     const [view, setView] = useState("dashboard");
@@ -30,6 +31,7 @@ function AppContent() {
                         {view === "movimientoCaja" && <MovimientoCaja />}
                         {view === "administrarRoles" && <AdministrarRoles />}
                         {view === "cierre" && <Cierre />}
+                        {view === "alertParameter" && <AlertParameter />}
                     </div>
 
                 </div>
