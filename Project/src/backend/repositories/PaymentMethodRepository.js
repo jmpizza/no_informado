@@ -23,9 +23,11 @@ export default class PaymentMethodRepository {
     });
   }
 
-  async findAll(filters = {}) {
+  async findAll(status = null) {
+    const where = status !== null ? { active: status } : {};
+    
     return await this.db.payment_method.findMany({
-      where: filters,
+      where,
       select: {
         id: true,
         name: true,

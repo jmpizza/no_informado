@@ -12,7 +12,7 @@ export function setupUserHandlers() {
 
   ipcMain.handle("user:create", async (event, data) => {
     try {
-      const user = await userService.CreateUser(data);
+      const user = await userService.createUser(data);
       return { success: true, user };
     } catch (error) {
       return { success: false, error: error.message };

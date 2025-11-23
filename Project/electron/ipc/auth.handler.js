@@ -11,7 +11,7 @@ export function setupAuthHandlers() {
   ipcMain.handle("auth:login", async (event, data) => {
     try {
       const { id, password } = data;
-      const user = await authService.AuthUser(id, password);
+      const user = await authService.authUser(id, password);
       return { success: true, user };
     } catch (error) {
       return { success: false, error: error.message };
