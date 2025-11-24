@@ -11,6 +11,21 @@ try {
       ipcRenderer.invoke("payment-method:getAll", status),
     updatePaymentMethodStatus: (name, status) =>
       ipcRenderer.invoke("payment-method:updateStatus", { name, status }),
+
+    createMovement: (movementData) =>
+      ipcRenderer.invoke("movement:create", movementData),
+    getMovementById: (id) =>
+      ipcRenderer.invoke("movement:getById", id),
+    getMovements: (filters) =>
+      ipcRenderer.invoke("movement:getAll", filters),
+    updateMovement: (id, movementData) =>
+      ipcRenderer.invoke("movement:update", { id, movementData }),
+    deleteMovement: (id) =>
+      ipcRenderer.invoke("movement:delete", id),
+    getTotalByPaymentMethod: (payment_method_id, type = null) =>
+      ipcRenderer.invoke("movement:getTotalByPaymentMethod", { payment_method_id, type }),
+    getTotalByUser: (user_id, type = null) =>
+      ipcRenderer.invoke("movement:getTotalByUser", { user_id, type }),
   });
 } catch (error) {
   console.error("Error en preload script:", error);

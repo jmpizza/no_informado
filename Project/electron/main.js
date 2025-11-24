@@ -5,6 +5,7 @@ import { setupAuthHandlers } from "./ipc/auth.handler.js";
 import { setupUserHandlers } from "./ipc/user.handler.js";
 import { setupRoleHandlers } from "./ipc/role.handler.js";
 import { setupPaymentMethodHandlers } from "./ipc/paymentMethod.handler.js";
+import { setupMovementHandlers } from "./ipc/movement.handler.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -35,6 +36,7 @@ app.whenReady().then(() => {
   setupUserHandlers();
   setupRoleHandlers();
   setupPaymentMethodHandlers();
+  setupMovementHandlers();
   createWindow();
 
   // Registrar Ctrl + Q

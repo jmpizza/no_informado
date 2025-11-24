@@ -3,6 +3,12 @@ export default class PaymentMethodRepository {
     this.db = prismaClient;
   }
 
+  async findById(id) {
+    return await this.db.payment_method.findUnique({
+      where: { id },
+    });
+  }
+
   async findByName(name) {
     return await this.db.payment_method.findFirst({
       where: { name },
