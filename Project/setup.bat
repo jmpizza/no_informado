@@ -75,7 +75,8 @@ REM === CONFIGURACIÓN DEL PROYECTO ===
 echo 🧱 Inicializando proyecto con npm...
 
 cd Proyect
-npm instal
+cd Project
+npm install
 node .\prisma\seed.js
 
 echo 📂 Creando estructura de carpetas...
