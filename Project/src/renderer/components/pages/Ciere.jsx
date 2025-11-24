@@ -1,21 +1,45 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DollarSign, CreditCard, Smartphone, Wallet, Lock, CheckCircle, AlertCircle, X, Info } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
+import { ICON_MAP } from '../../../constants/iconMap.js';
+
 
 export default function Cierre({ lastClosure, onClosureConfirmed }) {
-  const [paymentMethods, setPaymentMethods] = useState([
-    { id: 'cash', name: 'Efectivo', icon: DollarSign, expectedAmount: 250000, countedAmount: '', observations: '' },
-    { id: 'transfer', name: 'Transferencia', icon: CreditCard, expectedAmount: 180000, countedAmount: '', observations: '' },
-    { id: 'dataphone', name: 'Datáfono', icon: CreditCard, expectedAmount: 320000, countedAmount: '', observations: '' },
-    { id: 'digital-wallet', name: 'Billetera digital', icon: Smartphone, expectedAmount: 95000, countedAmount: '', observations: '' },
-    { id: 'others', name: 'Otros', icon: Wallet, expectedAmount: 15000, countedAmount: '', observations: '' },
-  ]);
-
+  const [paymentMethods, setPaymentMethods] = useState([]);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [closureCompleted, setClosureCompleted] = useState(false);
 
+  // Al montar el componente, cargamos los datos del cierre
+  useEffect(() => {
+    fetchClosingData();
+  }, []);
+
+  const fetchClosingData = async () => {
+    try {
+      const response = await window.api.fetchClosingData(true);
+
+      if (!response.success) throw new Error(response.error);
+
+      const formatted = response.data.map((method) => ({
+        id: method.payment_method_id,
+        name: method.name,
+        icon: ICON_MAP[method.name] ?? Info,
+        expectedAmount: method.balance,
+        countedAmount: "",
+        observations: "",
+      }));
+
+      setPaymentMethods(formatted);
+
+    } catch (err) {
+      console.error("Error al obtener cierre:", err);
+    }
+  };
+
+
+ 
   const handleAmountChange = (id, value) => {
     if (value === '' || /^\d*\.?\d*$/.test(value)) {
       setPaymentMethods(prev =>

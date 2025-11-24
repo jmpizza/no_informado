@@ -10,6 +10,8 @@ import {
   Receipt,
 } from "lucide-react";
 
+import { ICON_MAP, addIcon } from "../../../constants/iconMap.js";
+
 export default function MediosPago() {
 
   const [name, setName] = useState("");
@@ -58,37 +60,46 @@ export default function MediosPago() {
   };
 
   const fetchData = async () => {
-      setLoading(true);
-      try {
-          const response = await window.api.getPaymentMethods(null);
-          
-          if (response.success && response.data && Array.isArray(response.data)) {
-              const formattedData = response.data.map(pm => {
-                  const iconOption = iconOptions.find(opt => opt.label === pm.name) || iconOptions[0];
-                  return {
-                      id: pm.id,
-                      icon: iconOption.icon,
-                      color: iconOption.color,
-                      Nombre: pm.name,
-                      Descripcion: pm.account_number ? `Cuenta: ${pm.account_number}` : "-",
-                      Estado: pm.active ? "Activo" : "Inactivo",
-                      active: pm.active
-                  };
-              });
-              setData(formattedData);
-          } else {
-              console.error("Response:", response);
-              alert("Error al cargar medios de pago: " + (response.error || "Respuesta inválida"));
-              setData([]);
-          }
-      } catch (error) {
-          console.error("Error fetching payment methods:", error);
-          alert("Error al cargar medios de pago");
-          setData([]);
-      } finally {
-          setLoading(false);
-      }
-  };
+  setLoading(true);
+  try {
+    const response = await window.api.getPaymentMethods(null);
+
+    if (response.success && response.data && Array.isArray(response.data)) {
+      const formattedData = response.data.map(pm => {
+        // Obtenemos el ícono según el nombre
+        const Icon = ICON_MAP[pm.name] || DollarSign;
+
+        // Color según iconOptions o default
+        const color = iconOptions.find(opt => opt.label === pm.name)?.color || "text-gray-700";
+
+        // Si es Efectivo o Tarjeta, el botón de deshabilitar se desactiva
+        const disableButton = pm.name === "Efectivo" || pm.name === "Tarjeta";
+
+        return {
+          id: pm.id,
+          icon: Icon,
+          color: color,
+          Nombre: pm.name,
+          Descripcion: pm.account_number ? `Cuenta: ${pm.account_number}` : "-",
+          Estado: pm.active ? "Activo" : "Inactivo",
+          active: pm.active,
+          disableButton, // nuevo campo
+        };
+      });
+      setData(formattedData);
+    } else {
+      console.error("Response:", response);
+      alert("Error al cargar medios de pago: " + (response.error || "Respuesta inválida"));
+      setData([]);
+    }
+  } catch (error) {
+    console.error("Error fetching payment methods:", error);
+    alert("Error al cargar medios de pago");
+    setData([]);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchData();
@@ -117,12 +128,16 @@ export default function MediosPago() {
       if (response.success) {
         alert(`Medio de pago agregado: ${name}`);
 
+        addIcon(paymentMethodData.name, selectedIcon.icon);
+
+
         setName("");
         setDescription("");
         setSelectedIcon(defaultIcon);
         setShowPopover(false);
 
         await fetchData();
+
       } else {
         alert("Error al agregar medio de pago: " + response.error);
       }
@@ -336,16 +351,19 @@ export default function MediosPago() {
                             </td>
                             <td className="px-4 py-2">
                               <button
-                                onClick={() => handleToggleStatus(row)}
-                                className={`px-3 py-1 rounded text-xs font-medium transition
-                                                                    ${row.active
+                              onClick={() => handleToggleStatus(row)}
+                              className={`px-3 py-1 rounded text-xs font-medium transition
+                                ${
+                                  row.disableButton
+                                    ? 'bg-gray-700 text-gray-575 cursor-not-allowed pointer-events-none'
+                                    : row.active
                                     ? 'bg-red-100 text-red-700 hover:bg-red-200'
                                     : 'bg-green-100 text-green-700 hover:bg-green-200'
-                                  }`}
-                                disabled={loading}
-                              >
-                                {row.active ? 'Desactivar' : 'Activar'}
-                              </button>
+                                }`}
+                              disabled={loading || row.disableButton}
+                            >
+                              {row.disableButton ? 'Deshabilitado' : row.active ? 'Desactivar' : 'Activar'}
+                            </button>
                             </td>
                           </tr>
                         );

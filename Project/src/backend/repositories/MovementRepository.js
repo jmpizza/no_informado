@@ -162,6 +162,36 @@ export default class MovementRepository {
     return result._sum.ammount || 0;
   }
 
+  async getTotalByPaymentMethodToday(payment_method_id, type = null) {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const where = {
+      payment_method_id,
+      created_at: {
+        gte: startOfDay,
+        lte: endOfDay,
+      },
+    };
+
+    if (type !== null) {
+      where.type = type;
+    }
+
+    const result = await this.db.movement.aggregate({
+      where,
+      _sum: {
+        ammount: true,
+      },
+    });
+
+    return result._sum.ammount || 0;
+  }
+
+
   async getTotalByUser(user_id, type = null) {
     const where = { user_id };
     
@@ -178,4 +208,7 @@ export default class MovementRepository {
 
     return result._sum.ammount || 0;
   }
+
+
+
 }

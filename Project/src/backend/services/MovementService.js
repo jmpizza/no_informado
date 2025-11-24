@@ -91,4 +91,5 @@ export default class MovementService {
 
     return await this.movementRepository.getTotalByUser(user_id, type);
   }
+  
 }

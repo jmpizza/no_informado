@@ -26,6 +26,8 @@ try {
       ipcRenderer.invoke("movement:getTotalByPaymentMethod", { payment_method_id, type }),
     getTotalByUser: (user_id, type = null) =>
       ipcRenderer.invoke("movement:getTotalByUser", { user_id, type }),
+    fetchClosingData: (status = null) =>
+      ipcRenderer.invoke("closing:fetchData", status),
   });
 } catch (error) {
   console.error("Error en preload script:", error);
