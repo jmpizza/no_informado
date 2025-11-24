@@ -19,7 +19,7 @@ export default function LeftPanel({ setView }) {
 
     const menuItems = [
         { title: "Inicio", icon: Home, view: "home", children: null },
-        { title: "Operacion de Caja", icon: DollarSign, view: null, children: [{ title: "Registrar movimiento", view: "movimientoCaja" },{title: "Cierre", view:"cierre"}] },
+        { title: "Operacion de Caja", icon: DollarSign, view: null, children: [{ title: "Registrar movimiento", view: "movimientoCaja" },{title: "Cierre", view:"cierre"}, {title:"Cierre de caja", view:"closeHistory"}] },
         { title: "Administrar usuarios", icon: Users, view: null, children: [{ title: "Registrar usuario", view: "registrarUsuario" }, { title: "Administrar permisos", view: null }, { title: "Administrar roles", view: "administrarRoles" }] },
         { title: "Reportes y analisis", icon: BarChart3, view: "reports", children: null },
         { title: "Alertas e inconsistencias", icon: AlertTriangle, view: "alerts", children: [{title:"Parametros de alertas",view:"alertParameter"}] },
