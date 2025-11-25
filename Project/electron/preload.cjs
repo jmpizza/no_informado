@@ -32,6 +32,9 @@ try {
       ipcRenderer.invoke("closing:create", closingData),
     getLastClosing: () =>
       ipcRenderer.invoke("closing:getLastClosing"),
+
+    setParameters: (alertData) =>
+      ipcRenderer.invoke("alert:setParameters", alertData),
   });
 } catch (error) {
   console.error("Error en preload script:", error);

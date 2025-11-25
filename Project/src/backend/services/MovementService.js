@@ -91,5 +91,8 @@ export default class MovementService {
 
     return await this.movementRepository.getTotalByUser(user_id, type);
   }
-  
+
+  async getLatestMovement(){
+    return this.movementRepository.findLatestMovement()
+  }
 }

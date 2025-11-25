@@ -4,17 +4,25 @@ import MovementService from "../../src/backend/services/MovementService.js";
 import MovementRepository from "../../src/backend/repositories/MovementRepository.js";
 import UserRepository from "../../src/backend/repositories/UserRepository.js";
 import PaymentMethodRepository from "../../src/backend/repositories/PaymentMethodRepository.js";
+import AlertRepository from "../../src/backend/repositories/AlertRepository.js";
+import AlertService from "../../src/backend/services/AlertService.js";
+
+
 
 export function setupMovementHandlers() {
   const db = DatabaseSingle.getInstance().prisma;
   const movementRepository = new MovementRepository(db);
   const userRepository = new UserRepository(db);
+  const alertRepository = new AlertRepository(db)
+
+  const alertService = new AlertService(alertRepository)
   const paymentMethodRepository = new PaymentMethodRepository(db);
   const movementService = new MovementService(
     movementRepository,
     userRepository,
     paymentMethodRepository
   );
+  
 
   ipcMain.handle("movement:create", async (event, movementData) => {
     try {
@@ -25,6 +33,15 @@ export function setupMovementHandlers() {
         movementData.payment_method_id,
         movementData.closing_id
       );
+      if (await alertService.checkIrregularMovement(movementData.ammount)){
+
+        
+        const alert = await alertService.createAlertMovement(
+          movementData.user_id,
+          movement.id,
+          movement.closing_id,
+        )
+      }
       return { success: true, data: movement };
     } catch (error) {
       return { success: false, error: error.message };

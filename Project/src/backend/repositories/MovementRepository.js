@@ -209,6 +209,9 @@ export default class MovementRepository {
     return result._sum.ammount || 0;
   }
 
-
-
+  async findLatestMovement() {
+    return this.db.movement.findFirst({
+      orderBy: {id: 'desc'}
+    })
+  }
 }

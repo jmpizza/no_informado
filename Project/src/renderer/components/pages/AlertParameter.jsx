@@ -28,10 +28,15 @@ export default function AlertParameter({ parameters = {}, onSave = () => {} }) {
     setShowConfirmModal(true);
   };
 
-  const handleConfirmSave = () => {
+  const handleConfirmSave = async () => {
+    
+    const response = await window.api.setParameters(formData)
+
     onSave(formData);
     setSuccess(true);
     setShowConfirmModal(false);
+
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     setTimeout(() => setSuccess(false), 3000);
