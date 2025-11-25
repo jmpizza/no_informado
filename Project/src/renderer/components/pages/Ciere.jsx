@@ -10,11 +10,9 @@ export default function Cierre({ lastClosure, onClosureConfirmed }) {
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [closureCompleted, setClosureCompleted] = useState(false);
+  const [lastClosureData, setLastClosureData] = useState(null);
 
-  // Al montar el componente, cargamos los datos del cierre
-  useEffect(() => {
-    fetchClosingData();
-  }, []);
+
 
   const fetchClosingData = async () => {
     try {
@@ -38,7 +36,34 @@ export default function Cierre({ lastClosure, onClosureConfirmed }) {
     }
   };
 
+    // Al montar el componente, cargamos los datos del cierre
+  useEffect(() => {
+    fetchClosingData();
+  }, []);
 
+/*
+  const fetchLastClosing = async () => {
+    try {
+      const response = await window.api.fetchLastClosing();
+
+      if (!response.success) throw new Error(response.error);
+
+      // Aquí puedes manejar la respuesta del último cierre si es necesario
+      return response.data;
+
+    } catch (err) {
+      console.error("Error al obtener el último cierre:", err);
+    }
+  };
+
+  useEffect(() => {
+    const loadLastClosure = async () => {
+      const data = await fetchLastClosing();
+      if (data) setLastClosureData(data);
+    };
+    loadLastClosure();
+  }, []);
+*/
  
   const handleAmountChange = (id, value) => {
     if (value === '' || /^\d*\.?\d*$/.test(value)) {
@@ -92,39 +117,41 @@ export default function Cierre({ lastClosure, onClosureConfirmed }) {
     minute: '2-digit'
   });
 
-  const handleConfirmClosure = () => {
-    const newClosure = {
-      id: `closure-${Date.now()}`,
-      closureNumber: (lastClosure?.closureNumber || 0) + 1,
-      date: formattedDate,
-      operator: 'Juan Pérez (Cajero)',
-      paymentMethods: paymentMethods.map(pm => ({
-        id: pm.id,
-        name: pm.name,
-        icon: pm.icon,
-        expectedAmount: pm.expectedAmount,
-        countedAmount: parseFloat(pm.countedAmount) || 0,
-        observations: pm.observations
-      })),
-      totalExpected: totals.totalExpected,
-      totalCounted: totals.totalCounted,
-      totalDifference: totals.totalDifference
-    };
+  const handleConfirmClosure = async () => {
+  
+  const currentDate = new Date();
 
-    onClosureConfirmed(newClosure);
+  const closingData = {
+    total: totals.totalCounted,                
+    counted: totals.totalCounted,             
+    expected_balance: totals.totalExpected,    
+    difference: totals.totalDifference,       
+    comments: `Cierre con ${paymentMethods.length} métodos de pago`, 
+    created_at: currentDate,
+    user_id: 1000000000 
+  };
+
+  try {
+    // Llamada a tu API/DB para guardar
+    const response = await window.api.createClosing(closingData);
+
+    if (!response.success) throw new Error(response.error);
+
+    // Marcar cierre como completado en React
     setClosureCompleted(true);
     setShowConfirmationModal(false);
 
-    setPaymentMethods([
-      { id: 'cash', name: 'Efectivo', icon: DollarSign, expectedAmount: 250000, countedAmount: '', observations: '' },
-      { id: 'transfer', name: 'Transferencia', icon: CreditCard, expectedAmount: 180000, countedAmount: '', observations: '' },
-      { id: 'dataphone', name: 'Datáfono', icon: CreditCard, expectedAmount: 320000, countedAmount: '', observations: '' },
-      { id: 'digital-wallet', name: 'Billetera digital', icon: Smartphone, expectedAmount: 95000, countedAmount: '', observations: '' },
-      { id: 'others', name: 'Otros', icon: Wallet, expectedAmount: 15000, countedAmount: '', observations: '' },
-    ]);
-
+    // Scroll hacia arriba para que se vea el mensaje
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+
+    // Opcional: notificar al padre
+    onClosureConfirmed && onClosureConfirmed(closingData);
+
+  } catch (err) {
+    console.error("Error al guardar cierre:", err);
+  }
+};
+
 
   const handleCancelClosure = () => {
     setShowConfirmationModal(false);
@@ -168,28 +195,30 @@ export default function Cierre({ lastClosure, onClosureConfirmed }) {
       {lastClosure && (
         <div className="mb-6">
           <h3 className="text-gray-500 mb-3">Último cierre registrado</h3>
-          <div className={`rounded-lg border p-4 ${getStatusColor(lastClosure.totalDifference).border} ${getStatusColor(lastClosure.totalDifference).bg}`}>
+          <div className={`rounded-lg border p-4 ${getStatusColor(lastClosureData.difference).border} ${getStatusColor(lastClosureData.totalDifference).bg}`}>
             <div className="grid grid-cols-4 gap-4">
               <div>
-                <p className="text-gray-600 text-sm mb-1">Cierre #{lastClosure.closureNumber}</p>
-                <p className="text-gray-900">{lastClosure.date}</p>
+                <p className="text-gray-600 text-sm mb-1">Cierre #{lastClosureData.id}</p>
+                <p className="text-gray-900">{lastClosureData.date}</p>
               </div>
               <div>
                 <p className="text-gray-600 text-sm mb-1">Operador</p>
-                <p className="text-blue-600">{lastClosure.operator}</p>
+                <p className="text-blue-600">
+                  {lastClosureData.user.name} {lastClosureData.user.last_name}
+                </p>
               </div>
               <div>
                 <p className="text-gray-600 text-sm mb-1">Estado</p>
-                <p className={getStatusColor(lastClosure.totalDifference).text}>
-                  {lastClosure.totalDifference === 0 ? 'Cuadrada' :
-                  lastClosure.totalDifference > 0 ? 'Sobrante' : 'Faltante'}
+                <p className={getStatusColor(lastClosureData.difference).text}>
+                  {lastClosureData.totalDifference === 0 ? 'Cuadrada' :
+                  lastClosureData.totalDifference > 0 ? 'Sobrante' : 'Faltante'}
                 </p>
               </div>
               <div>
                 <p className="text-gray-600 text-sm mb-1">Diferencia</p>
-                <p className={getStatusColor(lastClosure.totalDifference).text}>
-                  {lastClosure.totalDifference >= 0 ? '+' : ''} $
-                  {lastClosure.totalDifference.toLocaleString('es-CO')}
+                <p className={getStatusColor(lastClosureData.difference).text}>
+                  {lastClosureData.difference >= 0 ? '+' : ''} $
+                  {lastClosureData.difference.toLocaleString('es-CO')}
                 </p>
               </div>
             </div>

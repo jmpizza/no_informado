@@ -42,4 +42,34 @@ export default class ClosingService {
     }
     return await this.movementRepository.getTotalByPaymentMethodToday(payment_method_id, type);
   }
+
+  async createClosing(total,comment, expected_balance, counted, difference, created_at, user_id) {
+
+    const userExists = await this.userRepository.findById(user_id);
+    if (!userExists) {
+      throw new NotFoundException(`Usuario con id ${user_id} no encontrado`);
+    }
+
+    const closingData = {
+      total: total,
+      comments: comment,
+      expected_balance: expected_balance,
+      counted: counted,
+      difference: difference,
+      created_at: created_at,
+      user_id: user_id
+    };
+
+    return await this.closingRepository.create(closingData);
+  }
+
+/*  async getLastClosing() {
+
+    const lastClosing = await this.closingRepository.findLast();
+
+    if (!lastClosing) {
+      throw new NotFoundException("No se encontró ningún cierre previo");
+    }
+    return lastClosing;
+  } */
 }   

@@ -28,6 +28,8 @@ try {
       ipcRenderer.invoke("movement:getTotalByUser", { user_id, type }),
     fetchClosingData: (status = null) =>
       ipcRenderer.invoke("closing:fetchData", status),
+    createClosing: (closingData) =>
+      ipcRenderer.invoke("closing:create", closingData),
   });
 } catch (error) {
   console.error("Error en preload script:", error);

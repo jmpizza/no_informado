@@ -48,16 +48,7 @@ export default function MediosPago() {
   const defaultIcon = iconOptions.find(item => item.label === "Efectivo");
   const [selectedIcon, setSelectedIcon] = useState(defaultIcon);
 
-  const iconMap = {
-    "DollarSign": DollarSign,
-    "CreditCard": CreditCard,
-    "Wallet": Wallet,
-    "Smartphone": Smartphone,
-    "Building": Building,
-    "QrCode": QrCode,
-    "Landmark": Landmark,
-    "Receipt": Receipt,
-  };
+  
 
   const fetchData = async () => {
   setLoading(true);

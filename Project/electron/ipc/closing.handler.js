@@ -32,4 +32,21 @@ export function setupClosingHandlers() {
       return { success: false, error: error.message };
     }
   });
+
+  ipcMain.handle("closing:create", async (event, closingData) => {
+    try {
+      const closing = await closingService.createClosing(
+        closingData.total,
+        closingData.comment,
+        closingData.expected_balance,
+        closingData.counted,
+        closingData.difference,
+        closingData.created_at,
+        closingData.user_id
+      );
+      return { success: true, data: closing };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  });
 }
