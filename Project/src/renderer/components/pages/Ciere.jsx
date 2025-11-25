@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { DollarSign, CreditCard, Smartphone, Wallet, Lock, CheckCircle, AlertCircle, X, Info } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { ICON_MAP } from '../../../constants/iconMap.js';
-import { getAuthenticatedUser } from '../../../backend/utils/SessionContext.js';
 
 
 export default function Cierre({ lastClosure, onClosureConfirmed }) {
@@ -42,29 +41,31 @@ export default function Cierre({ lastClosure, onClosureConfirmed }) {
     fetchClosingData();
   }, []);
 
-/*
+
+
+
+
   const fetchLastClosing = async () => {
     try {
-      const response = await window.api.fetchLastClosing();
+      const response = await window.api.getLastClosing();
 
       if (!response.success) throw new Error(response.error);
 
-      // Aquí puedes manejar la respuesta del último cierre si es necesario
-      return response.data;
+      const lastClosure = response.data;
+
+      setLastClosureData(lastClosure);
 
     } catch (err) {
       console.error("Error al obtener el último cierre:", err);
     }
   };
 
+
   useEffect(() => {
-    const loadLastClosure = async () => {
-      const data = await fetchLastClosing();
-      if (data) setLastClosureData(data);
-    };
-    loadLastClosure();
+    fetchLastClosing();
   }, []);
-*/
+
+
  
   const handleAmountChange = (id, value) => {
     if (value === '' || /^\d*\.?\d*$/.test(value)) {
@@ -119,45 +120,51 @@ export default function Cierre({ lastClosure, onClosureConfirmed }) {
   });
 
   const handleConfirmClosure = async () => {
-  
-  const currentDate = new Date();
+    const currentDate = new Date();
 
-  console.log(getAuthenticatedUser());
+    const closingData = {
+      total: totals.totalCounted,
+      counted: totals.totalCounted,
+      expected_balance: totals.totalExpected,
+      difference: totals.totalDifference,
+      comments: paymentMethods
+        .filter(pm => pm.observations.trim() !== "")
+        .map(pm => `${pm.name}: ${pm.observations}`)
+        .join(" | ") || "Sin observaciones",
+      created_at: currentDate,
+      user_id: 1000000000
+    };
 
-  const closingData = {
-    total: totals.totalCounted,                
-    counted: totals.totalCounted,             
-    expected_balance: totals.totalExpected,    
-    difference: totals.totalDifference,       
-    comments: `Cierre con ${paymentMethods.length} métodos de pago`, 
-    created_at: currentDate,
-    user_id: null
+    try {
+      const response = await window.api.createClosing(closingData);
+
+      if (!response.success) throw new Error(response.error);
+
+      setShowConfirmationModal(false);
+      setClosureCompleted(true);
+
+      await resetModule();
+
+    } catch (err) {
+      console.error("Error al guardar cierre:", err);
+    }
   };
 
-  try {
-    // Llamada a tu API/DB para guardar
-    const response = await window.api.createClosing(closingData);
-
-    if (!response.success) throw new Error(response.error);
-
-    // Marcar cierre como completado en React
-    setClosureCompleted(true);
-    setShowConfirmationModal(false);
-
-    // Scroll hacia arriba para que se vea el mensaje
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    // Opcional: notificar al padre
-    onClosureConfirmed && onClosureConfirmed(closingData);
-
-  } catch (err) {
-    console.error("Error al guardar cierre:", err);
-  }
-};
 
 
   const handleCancelClosure = () => {
     setShowConfirmationModal(false);
+  };
+
+  const resetModule = async () => {
+    setPaymentMethods([]);
+    setLastClosureData(null);
+    setClosureCompleted(false);
+
+    await fetchClosingData();
+    await fetchLastClosing();
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const totalStatusColor = getStatusColor(totals.totalDifference);
@@ -195,14 +202,17 @@ export default function Cierre({ lastClosure, onClosureConfirmed }) {
       </div>
 
       {/* Last closure */}
-      {lastClosure && (
+      
+      {lastClosureData && (
         <div className="mb-6">
           <h3 className="text-gray-500 mb-3">Último cierre registrado</h3>
-          <div className={`rounded-lg border p-4 ${getStatusColor(lastClosureData.difference).border} ${getStatusColor(lastClosureData.totalDifference).bg}`}>
+          <div className={`rounded-lg border p-4 ${getStatusColor(lastClosureData.difference).border} ${getStatusColor(lastClosureData.difference).bg}`}>
             <div className="grid grid-cols-4 gap-4">
               <div>
                 <p className="text-gray-600 text-sm mb-1">Cierre #{lastClosureData.id}</p>
-                <p className="text-gray-900">{lastClosureData.date}</p>
+                <p className="text-gray-900">
+                  {lastClosureData?.date ? new Date(lastClosureData.date).toLocaleString('es-CO') : "—"}
+                </p>
               </div>
               <div>
                 <p className="text-gray-600 text-sm mb-1">Operador</p>
@@ -228,6 +238,7 @@ export default function Cierre({ lastClosure, onClosureConfirmed }) {
           </div>
         </div>
       )}
+
 
       {/* Payment table */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6">

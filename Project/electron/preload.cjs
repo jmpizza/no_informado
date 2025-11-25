@@ -30,6 +30,8 @@ try {
       ipcRenderer.invoke("closing:fetchData", status),
     createClosing: (closingData) =>
       ipcRenderer.invoke("closing:create", closingData),
+    getLastClosing: () =>
+      ipcRenderer.invoke("closing:getLastClosing"),
   });
 } catch (error) {
   console.error("Error en preload script:", error);

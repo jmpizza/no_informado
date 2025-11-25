@@ -63,13 +63,17 @@ export default class ClosingService {
     return await this.closingRepository.create(closingData);
   }
 
-/*  async getLastClosing() {
+  async getLastClosing() {
+    const last = await this.closingRepository.findLast();
 
-    const lastClosing = await this.closingRepository.findLast();
+    if (!last) return null;
 
-    if (!lastClosing) {
-      throw new NotFoundException("No se encontró ningún cierre previo");
-    }
-    return lastClosing;
-  } */
-}   
+    return {
+      id: last.id,
+      date: last.created_at.toISOString(),
+      user: last.user,
+      difference: last.difference,
+      totalDifference: last.difference, // <-- AQUÍ lo igualas
+    };
+}
+} 

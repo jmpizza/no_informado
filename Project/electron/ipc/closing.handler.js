@@ -38,7 +38,7 @@ export function setupClosingHandlers() {
     try {
       const closing = await closingService.createClosing(
         closingData.total,
-        closingData.comment,
+        closingData.comments,
         closingData.expected_balance,
         closingData.counted,
         closingData.difference,
@@ -46,6 +46,15 @@ export function setupClosingHandlers() {
         getAuthenticatedUser()
       );
       return { success: true, data: closing };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle("closing:getLastClosing", async (event) => {
+    try {
+      const lastClosing = await closingService.getLastClosing();
+      return { success: true, data: lastClosing };
     } catch (error) {
       return { success: false, error: error.message };
     }
