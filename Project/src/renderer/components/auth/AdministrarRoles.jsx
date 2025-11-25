@@ -1,6 +1,6 @@
 import { PanelLeft, Shield, Search } from 'lucide-react';
 import { useState } from "react";
-import UserTable from "../aux/UserTable";
+import UserTable from "../auxiliary/UserTable";
 
 export default function AdministrarRoles() {
 

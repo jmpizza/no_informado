@@ -5,9 +5,10 @@ export default function MovimientoCaja() {
     const [selected, setSelected] = useState(null);
     const [monto, setMonto] = useState("");
     const [desc, setDesc] = useState("");
+    const [loading, setLoading] = useState(false);
 
-    const [metodoPago, setMetodoPago] = useState("");     // Seleccionado
-    const [metodosPago, setMetodosPago] = useState([]);   // Lista de métodos
+    const [metodoPago, setMetodoPago] = useState("");
+    const [metodosPago, setMetodosPago] = useState([]);
 
     const [saldoActual, setSaldoActual] = useState(0);
     const [saldoDespues, setSaldoDespues] = useState(0);
@@ -17,32 +18,57 @@ export default function MovimientoCaja() {
         { id: "egreso", titulo: "Egreso", desc: "Salida de dinero a caja", color: "red" },
     ];
 
-    // Obtener métodos de pago simulados
     useEffect(() => {
-        const dataSimulada = [
-            { id: 1, nombre: "Efectivo" },
-            { id: 2, nombre: "Nequi" },
-            { id: 3, nombre: "Daviplata" },
-            { id: 4, nombre: "Transferencia" },
-        ];
-
-        setTimeout(() => {
-            setMetodosPago(dataSimulada);
-        }, 500);
+        fetchMetodosPago();
+        fetchSaldoActual();
     }, []);
 
-    // Obtener saldos simulados
-    useEffect(() => {
-        const data = {
-            saldoAntes: 120000,
-            saldoNuevo: 120000,
-        };
+    const fetchMetodosPago = async () => {
+        try {
+            const response = await window.api.getPaymentMethods(true);
+            
+            if (response.success && response.data) {
+                setMetodosPago(response.data);
+            } else {
+                alert("Error al cargar métodos de pago: " + (response.error || "Error desconocido"));
+            }
+        } catch (error) {
+            console.error("Error fetching payment methods:", error);
+            alert("Error al cargar métodos de pago");
+        }
+    };
 
-        setSaldoActual(data.saldoAntes);
-        setSaldoDespues(data.saldoNuevo);
-    }, []);
+    const fetchSaldoActual = async () => {
+        try {
+            const userStr = localStorage.getItem("user");
+            if (!userStr) {
+                alert("No hay usuario autenticado");
+                return;
+            }
 
-    // Recalcular saldo con monto + tipo de movimiento
+            const user = JSON.parse(userStr);
+            const response = await window.api.getMovements({ user_id: user.id });
+
+            if (response.success && response.data) {
+                const movements = response.data;
+                let total = 0;
+
+                movements.forEach(movement => {
+                    if (movement.type) {
+                        total += movement.ammount;
+                    } else {
+                        total -= movement.ammount;
+                    }
+                });
+
+                setSaldoActual(total);
+                setSaldoDespues(total);
+            }
+        } catch (error) {
+            console.error("Error calculating balance:", error);
+        }
+    };
+
     useEffect(() => {
         const valor = Number(monto) || 0;
 
@@ -55,14 +81,68 @@ export default function MovimientoCaja() {
         }
     }, [monto, selected, saldoActual]);
 
+    const handleSubmit = async () => {
+        if (!selected) {
+            return alert("Debe seleccionar el tipo de movimiento");
+        }
 
-    const handleSubmit = () => {
-        console.log("Tipo:", selected);
-        console.log("Método de pago:", metodoPago);
-        console.log("Monto:", monto);
-        console.log("Descripción:", desc);
+        if (!metodoPago) {
+            return alert("Debe seleccionar un método de pago");
+        }
+
+        if (!monto || Number(monto) <= 0) {
+            return alert("Debe ingresar un monto válido");
+        }
+
+        const userStr = localStorage.getItem("user");
+        if (!userStr) {
+            return alert("No hay usuario autenticado");
+        }
+
+        const user = JSON.parse(userStr);
+        const metodoSeleccionado = metodosPago.find(m => m.name === metodoPago);
+
+        if (!metodoSeleccionado) {
+            return alert("Método de pago no válido");
+        }
+
+        setLoading(true);
+
+        try {
+            const movementData = {
+                ammount: Number(monto),
+                type: selected === "ingreso",
+                user_id: user.id,
+                payment_method_id: metodoSeleccionado.id,
+                closing_id: null,
+            };
+
+            const response = await window.api.createMovement(movementData);
+
+            if (response.success) {
+                alert(`Movimiento registrado exitosamente`);
+                setSelected(null);
+                setMonto("");
+                setDesc("");
+                setMetodoPago("");
+                await fetchSaldoActual();
+            } else {
+                alert("Error al registrar movimiento: " + response.error);
+            }
+        } catch (error) {
+            console.error("Error creating movement:", error);
+            alert("Error al registrar movimiento");
+        } finally {
+            setLoading(false);
+        }
     };
 
+    const handleLimpiar = () => {
+        setSelected(null);
+        setMonto("");
+        setDesc("");
+        setMetodoPago("");
+    };
 
     return (
         <div className="flex flex-col min-h-screen bg-gray-100">
@@ -78,7 +158,6 @@ export default function MovimientoCaja() {
                             Complete el formulario para registrar un ingreso o egreso de caja
                         </span>
 
-                        {/* Tipo de movimiento */}
                         <span className="text-sm text-black font-semibold mb-2">
                             Tipo de Movimiento *
                         </span>
@@ -90,9 +169,10 @@ export default function MovimientoCaja() {
                                 return (
                                     <div
                                         key={op.id}
-                                        onClick={() => setSelected(op.id)}
+                                        onClick={() => !loading && setSelected(op.id)}
                                         className={`w-full rounded-xl p-6 flex flex-col items-center cursor-pointer border-2 transition-all
-                                            ${activo ? `border-${op.color}-500` : "border-gray-300"}`}
+                                            ${activo ? `border-${op.color}-500` : "border-gray-300"}
+                                            ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
                                     >
                                         <div
                                             className={`mb-3 rounded-full border-4 p-2
@@ -117,7 +197,6 @@ export default function MovimientoCaja() {
                             })}
                         </div>
 
-                        {/* Método de pago */}
                         <div className="flex flex-col md:flex-row items-center gap-4 mt-4">
                             <span className="text-black text-sm font-bold">
                                 Método de pago *
@@ -127,18 +206,18 @@ export default function MovimientoCaja() {
                                 value={metodoPago}
                                 onChange={(e) => setMetodoPago(e.target.value)}
                                 className="w-full md:w-auto flex-1 text-black border border-gray-400 rounded-xl p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                disabled={loading}
                             >
                                 <option value="">Seleccione...</option>
 
                                 {metodosPago.map((item) => (
-                                    <option key={item.id} value={item.nombre}>
-                                        {item.nombre}
+                                    <option key={item.id} value={item.name}>
+                                        {item.name}
                                     </option>
                                 ))}
                             </select>
                         </div>
 
-                        {/* Monto */}
                         <span className="text-black font-semibold text-sm mt-4 mb-2">
                             Monto *
                         </span>
@@ -149,9 +228,9 @@ export default function MovimientoCaja() {
                             placeholder="Ingrese el monto"
                             value={monto}
                             onChange={(e) => setMonto(e.target.value)}
+                            disabled={loading}
                         />
 
-                        {/* Descripción */}
                         <span className="text-black font-semibold text-sm mt-4 mb-2">Descripción</span>
 
                         <input
@@ -160,9 +239,9 @@ export default function MovimientoCaja() {
                             placeholder="Ingrese una descripción del movimiento"
                             value={desc}
                             onChange={(e) => setDesc(e.target.value)}
+                            disabled={loading}
                         />
 
-                        {/* Saldos */}
                         <div className="grid grid-cols-[min-content_1fr] grid-rows-[min-content_1fr] border-2 border-gray-300 rounded-xl mt-6">
                             <div className="p-2">
                                 <AlertCircle className="w-4 h-4 text-gray-500" />
@@ -181,21 +260,22 @@ export default function MovimientoCaja() {
                             </span>
                         </div>
 
-                        {/* Botones */}
                         <div className="w-full pt-5 pb-6 flex text-center flex-row gap-4">
-                            <div
+                            <button
                                 onClick={handleSubmit}
-                                className="bg-blue-600 text-white py-2 rounded-lg w-full hover:bg-blue-700 transition"
+                                className="bg-blue-600 text-white py-2 rounded-lg w-full hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                disabled={loading}
                             >
-                                Confirmar
-                            </div>
+                                {loading ? "Guardando..." : "Confirmar"}
+                            </button>
 
-                            <div
-                                onClick={() => { setSelected(null); setMonto(""); setDesc(""); setMetodoPago(""); }}
-                                className="bg-white border-gray-400 border text-black py-2 rounded-lg w-3/12 hover:bg-gray-700 hover:text-white transition"
+                            <button
+                                onClick={handleLimpiar}
+                                className="bg-white border-gray-400 border text-white py-2 rounded-lg w-3/12 hover:bg-gray-700 hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={loading}
                             >
                                 Limpiar
-                            </div>
+                            </button>
                         </div>
 
                     </div>

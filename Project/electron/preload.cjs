@@ -1,11 +1,36 @@
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer } = require("electron");
 
 try {
-  contextBridge.exposeInMainWorld('api', {
-    login: (id, password) => ipcRenderer.invoke('auth:login', { id, password }),
-    createUser: (userData) => ipcRenderer.invoke('user:create', userData)
+  contextBridge.exposeInMainWorld("api", {
+    login: (id, password) => ipcRenderer.invoke("auth:login", { id, password }),
+    createUser: (userData) => ipcRenderer.invoke("user:create", userData),
+    
+    createPaymentMethod: (paymentMethodData) =>
+      ipcRenderer.invoke("payment-method:create", paymentMethodData),
+    getPaymentMethods: (status = null) =>
+      ipcRenderer.invoke("payment-method:getAll", status),
+    updatePaymentMethodStatus: (name, status) =>
+      ipcRenderer.invoke("payment-method:updateStatus", { name, status }),
+
+    createMovement: (movementData) =>
+      ipcRenderer.invoke("movement:create", movementData),
+    getMovementById: (id) =>
+      ipcRenderer.invoke("movement:getById", id),
+    getMovements: (filters) =>
+      ipcRenderer.invoke("movement:getAll", filters),
+    updateMovement: (id, movementData) =>
+      ipcRenderer.invoke("movement:update", { id, movementData }),
+    deleteMovement: (id) =>
+      ipcRenderer.invoke("movement:delete", id),
+    getTotalByPaymentMethod: (payment_method_id, type = null) =>
+      ipcRenderer.invoke("movement:getTotalByPaymentMethod", { payment_method_id, type }),
+    getTotalByUser: (user_id, type = null) =>
+      ipcRenderer.invoke("movement:getTotalByUser", { user_id, type }),
+    fetchClosingData: (status = null) =>
+      ipcRenderer.invoke("closing:fetchData", status),
+    createClosing: (closingData) =>
+      ipcRenderer.invoke("closing:create", closingData),
   });
-  
 } catch (error) {
   console.error("Error en preload script:", error);
 }

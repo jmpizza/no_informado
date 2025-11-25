@@ -7,7 +7,7 @@ export default class AuthService {
     this.userRepository = userRepository;
   }
 
-  async AuthUser(id, password) {
+  async authUser(id, password) {
     const dto = new LoginDTO(id, password);
     dto.validate();
     
