@@ -4,6 +4,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { ICON_MAP } from '../../../constants/iconMap.js';
+import { getAuthenticatedUser } from '../../../backend/utils/SessionContext.js';
 
 
 export default function Cierre({ lastClosure, onClosureConfirmed }) {
@@ -121,6 +122,8 @@ export default function Cierre({ lastClosure, onClosureConfirmed }) {
   
   const currentDate = new Date();
 
+  console.log(getAuthenticatedUser());
+
   const closingData = {
     total: totals.totalCounted,                
     counted: totals.totalCounted,             
@@ -128,7 +131,7 @@ export default function Cierre({ lastClosure, onClosureConfirmed }) {
     difference: totals.totalDifference,       
     comments: `Cierre con ${paymentMethods.length} métodos de pago`, 
     created_at: currentDate,
-    user_id: 1000000000 
+    user_id: null
   };
 
   try {

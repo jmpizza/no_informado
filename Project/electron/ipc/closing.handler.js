@@ -6,6 +6,7 @@ import UserRepository from "../../src/backend/repositories/UserRepository.js";
 import PaymentMethodService from "../../src/backend/services/PaymentMethodService.js";
 import MovementRepository from "../../src/backend/repositories/MovementRepository.js";
 import PaymentMethodRepository from "../../src/backend/repositories/PaymentMethodRepository.js";
+import { getAuthenticatedUser } from "../../src/backend/utils/SessionContext.js";
 
 export function setupClosingHandlers() {
   const db = DatabaseSingle.getInstance().prisma;
@@ -42,7 +43,7 @@ export function setupClosingHandlers() {
         closingData.counted,
         closingData.difference,
         closingData.created_at,
-        closingData.user_id
+        getAuthenticatedUser()
       );
       return { success: true, data: closing };
     } catch (error) {
