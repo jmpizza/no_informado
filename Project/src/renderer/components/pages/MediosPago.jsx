@@ -8,6 +8,7 @@ import {
   QrCode,
   Landmark,
   Receipt,
+  X
 } from "lucide-react";
 
 import { ICON_MAP, addIcon } from "../../../constants/iconMap.js";
@@ -20,6 +21,7 @@ export default function MediosPago() {
   const [showPopover, setShowPopover] = useState(false);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [toasts, setToasts] = useState([]);
 
   const iconRef = useRef(null);
 
@@ -48,7 +50,21 @@ export default function MediosPago() {
   const defaultIcon = iconOptions.find(item => item.label === "Efectivo");
   const [selectedIcon, setSelectedIcon] = useState(defaultIcon);
 
-  
+  const showToast = (type, message) => {
+    const id = Date.now();
+
+    setToasts(prev => {
+        if (prev.some(t => t.message === message)) return prev;
+        return [...prev, { id, type, message }];
+      });
+
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
+  };
+
+
+  const removeToast = (id) => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    };
 
   const fetchData = async () => {
   setLoading(true);
@@ -80,12 +96,12 @@ export default function MediosPago() {
       setData(formattedData);
     } else {
       console.error("Response:", response);
-      alert("Error al cargar medios de pago: " + (response.error || "Respuesta inválida"));
+      showToast("error", "Error al cargar medios de pago: " + (response.error || "Respuesta inválida"));
       setData([]);
     }
   } catch (error) {
     console.error("Error fetching payment methods:", error);
-    alert("Error al cargar medios de pago");
+    showToast("error", "Error al cargar medios de pago");
     setData([]);
   } finally {
     setLoading(false);
@@ -117,7 +133,7 @@ export default function MediosPago() {
       const response = await window.api.createPaymentMethod(paymentMethodData);
 
       if (response.success) {
-        alert(`Medio de pago agregado: ${name}`);
+        showToast("success", `Medio de pago agregado: ${name}`);
 
         addIcon(paymentMethodData.name, selectedIcon.icon);
 
@@ -130,39 +146,49 @@ export default function MediosPago() {
         await fetchData();
 
       } else {
-        alert("Error al agregar medio de pago: " + response.error);
+        showToast("error", "Error al agregar medio de pago: " + response.error);
       }
     } catch (error) {
       console.error("Error creating payment method:", error);
-      alert("Error al agregar medio de pago");
+      showToast("error", "Error al agregar medio de pago");
     } finally {
       setLoading(false);
     }
   };
 
   const handleToggleStatus = async (paymentMethod) => {
-    const newStatus = !paymentMethod.active;
+  const newStatus = !paymentMethod.active;
 
-    setLoading(true);
-    try {
-      const response = await window.api.updatePaymentMethodStatus(
-        paymentMethod.Nombre,
-        newStatus
-      );
+  setLoading(true);
+  try {
+    // Llamada al servidor
+    const response = await window.api.updatePaymentMethodStatus(
+      paymentMethod.Nombre,
+      newStatus
+    );
 
-      if (response.success) {
-        alert(`Medio de pago ${newStatus ? 'activado' : 'desactivado'} correctamente`);
-        await fetchData();
-      } else {
-        alert("Error al actualizar estado: " + response.error);
-      }
-    } catch (error) {
-      console.error("Error updating payment method:", error);
-      alert("Error al actualizar estado");
-    } finally {
-      setLoading(false);
+    if (response.success) {
+      // Actualizamos localmente sin volver a fetchData
+      setData(prevData =>
+      prevData.map(p =>
+        p.id === paymentMethod.id
+          ? { ...p, active: newStatus, Estado: newStatus ? "Activo" : "Inactivo" }
+          : p
+      )
+    );
+
+      showToast("success", `Medio de pago ${newStatus ? 'activado' : 'desactivado'} correctamente`);
+    } else {
+      showToast("error", "Error al actualizar estado: " + response.error);
     }
-  };
+  } catch (error) {
+    console.error("Error updating payment method:", error);
+    showToast("error", "Error al actualizar estado");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="flex flex-col h-screen p-20 bg-gray-100">
@@ -367,6 +393,26 @@ export default function MediosPago() {
           </div>
         )}
       </div>
+    {/* Toasts */}
+      <div className="fixed top-5 right-5 flex flex-col gap-2 z-50">
+        {toasts.map(t => (
+          <div
+            key={t.id}
+            className={`flex justify-between items-center p-3 shadow-lg max-w-xs w-full
+              ${t.type === "success" ? "bg-green-500" : "bg-red-500"} 
+              text-white rounded-2xl`}
+          >
+            <span className="mr-2">{t.message}</span>
+            <button 
+              onClick={() => removeToast(t.id)} 
+              className="p-1 rounded-full hover:bg-red-500/20 flex items-center justify-center"
+            >
+              <X size={14} strokeWidth={2} className="text-white" />
+            </button>
+          </div>
+        ))}
+      </div>    
     </div>
+    
   );
 }

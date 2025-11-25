@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { ArrowUp, AlertCircle } from "lucide-react";
+import { X , ArrowUp, AlertCircle } from "lucide-react";
+
 
 export default function MovimientoCaja() {
     const [selected, setSelected] = useState(null);
@@ -12,6 +13,8 @@ export default function MovimientoCaja() {
 
     const [saldoActual, setSaldoActual] = useState(0);
     const [saldoDespues, setSaldoDespues] = useState(0);
+    const [toasts, setToasts] = useState([]);
+
 
     const opciones = [
         { id: "ingreso", titulo: "Ingreso", desc: "Entrada de dinero a caja", color: "green" },
@@ -23,6 +26,22 @@ export default function MovimientoCaja() {
         fetchSaldoActual();
     }, []);
 
+    const showToast = (type, message) => {
+        const id = Date.now();
+
+        setToasts(prev => {
+            if (prev.some(t => t.message === message)) return prev;
+            return [...prev, { id, type, message }];
+        });
+
+        setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
+    };
+
+
+    const removeToast = (id) => {
+        setToasts(prev => prev.filter(t => t.id !== id));
+    };
+
     const fetchMetodosPago = async () => {
         try {
             const response = await window.api.getPaymentMethods(true);
@@ -30,19 +49,21 @@ export default function MovimientoCaja() {
             if (response.success && response.data) {
                 setMetodosPago(response.data);
             } else {
-                alert("Error al cargar métodos de pago: " + (response.error || "Error desconocido"));
+                showToast("error", "Error al cargar métodos de pago: " + (response.error || "Error desconocido"));
             }
         } catch (error) {
             console.error("Error fetching payment methods:", error);
-            alert("Error al cargar métodos de pago");
+            showToast("error", "Error al cargar métodos de pago");
         }
     };
+
+
 
     const fetchSaldoActual = async () => {
         try {
             const userStr = localStorage.getItem("user");
             if (!userStr) {
-                alert("No hay usuario autenticado");
+                showToast("error", "No hay usuario autenticado");
                 return;
             }
 
@@ -83,27 +104,27 @@ export default function MovimientoCaja() {
 
     const handleSubmit = async () => {
         if (!selected) {
-            return alert("Debe seleccionar el tipo de movimiento");
+            return showToast("error", "Debe seleccionar el tipo de movimiento");
         }
 
         if (!metodoPago) {
-            return alert("Debe seleccionar un método de pago");
+            return showToast("error", "Debe seleccionar un método de pago");
         }
 
         if (!monto || Number(monto) <= 0) {
-            return alert("Debe ingresar un monto válido");
+            return showToast("error", "Debe ingresar un monto válido");
         }
 
         const userStr = localStorage.getItem("user");
         if (!userStr) {
-            return alert("No hay usuario autenticado");
+            return showToast("error", "No hay usuario autenticado");
         }
 
         const user = JSON.parse(userStr);
         const metodoSeleccionado = metodosPago.find(m => m.name === metodoPago);
 
         if (!metodoSeleccionado) {
-            return alert("Método de pago no válido");
+            return showToast("error", "Método de pago no válido");
         }
 
         setLoading(true);
@@ -120,18 +141,18 @@ export default function MovimientoCaja() {
             const response = await window.api.createMovement(movementData);
 
             if (response.success) {
-                alert(`Movimiento registrado exitosamente`);
+                showToast("success", `Movimiento registrado exitosamente`);
                 setSelected(null);
                 setMonto("");
                 setDesc("");
                 setMetodoPago("");
                 await fetchSaldoActual();
             } else {
-                alert("Error al registrar movimiento: " + response.error);
+                showToast("error", "Error al registrar movimiento: " + response.error);
             }
         } catch (error) {
             console.error("Error creating movement:", error);
-            alert("Error al registrar movimiento");
+            showToast("error", "Error al registrar movimiento");
         } finally {
             setLoading(false);
         }
@@ -280,6 +301,25 @@ export default function MovimientoCaja() {
 
                     </div>
                 </div>
+            </div>
+
+            <div className="fixed top-5 right-5 flex flex-col gap-2 z-50">
+                {toasts.map(t => (
+                    <div
+                        key={t.id}
+                        className={`flex justify-between items-center p-3 shadow-lg max-w-xs w-full
+                                    ${t.type === "success" ? "bg-green-500" : "bg-red-500"} 
+                                    text-white rounded-2xl`}
+                    >
+                        <span className="mr-2">{t.message}</span>
+                        <button 
+                            onClick={() => removeToast(t.id)} 
+                            className="p-1 rounded-full hover:bg-red-500/20 flex items-center justify-center"
+                        >
+                            <X size={14} strokeWidth={2} className="text-white" />
+                        </button>
+                    </div>
+                ))}
             </div>
         </div>
     );
