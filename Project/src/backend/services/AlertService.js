@@ -34,11 +34,9 @@ export default class AlertService {
 
     async checkClosing(Total){
         
-        const parameters = (await this.AlertRepository.getParameters()).split(" ")
-        const closingCritical = Number(parameters[0])
-        const closingWarning = Number(parameters[1])
-        console.log(closingCritical)
-        console.log(closingWarning)
+        const parameters = (await this.AlertRepository.getParameters())
+        const closingCritical = (parameters[0]).setting
+        const closingWarning = (parameters[1]).setting
 
         if (Total < 0){
             return 3
@@ -56,10 +54,8 @@ export default class AlertService {
     }
 
     async checkIrregularMovement(ammount){
-        console.log("asd")
-        const parameters = (await this.AlertRepository.getParameters()).split(" ")
-        const irregularAmmount = Number(parameters[2])
-        console.log(irregularAmmount)
+        const parameters = (await this.AlertRepository.getParameters())
+        const irregularAmmount = (parameters[3]).setting
 
         if (ammount > irregularAmmount){
             return true
@@ -73,13 +69,6 @@ export default class AlertService {
     }
 
     async setNewParameters(parametersData){
-    const params = {
-        closingCritical:parametersData.closureDifferenceThreshold,
-        closingWarning:parametersData.minorDifferenceThreshold,
-        Timeinterval:parametersData.anomalousMovementInterval,
-        irregularAmmount:parametersData.irregularAmountLimit,
-        AnomalousMovements:parametersData.maxAnomalousMovementsPerDay
-    }
-    const parameters = await this.AlertRepository.setParameters(params)
+    const parameters = await this.AlertRepository.setParameters(parametersData)
     }
 }

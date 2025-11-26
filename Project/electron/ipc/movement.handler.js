@@ -34,8 +34,7 @@ export function setupMovementHandlers() {
         movementData.closing_id
       );
       if (await alertService.checkIrregularMovement(movementData.ammount)){
-
-        
+      
         const alert = await alertService.createAlertMovement(
           movementData.user_id,
           movement.id,

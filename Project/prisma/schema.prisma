@@ -29,16 +29,17 @@ model balance {
 }
 
 model closing {
-  id               Int        @id @default(autoincrement())
+  id               Int               @id @default(autoincrement())
   total            Int
   comments         String?
   expected_balance Int
   counted          Int
   difference       Int
-  created_at       DateTime?  @db.Timestamp(6)
+  created_at       DateTime?         @db.Timestamp(6)
   user_id          Int
   alert            alert[]
-  user             user       @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user             user              @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  closing_details  closing_details[]
   movement         movement[]
 }
 
@@ -65,12 +66,13 @@ model movement {
 }
 
 model payment_method {
-  id             Int        @id @default(autoincrement())
-  name           String     @db.VarChar
-  active         Boolean
-  account_number Int?
-  balance        balance[]
-  movement       movement[]
+  id              Int               @id @default(autoincrement())
+  name            String            @db.VarChar
+  active          Boolean
+  account_number  Int?
+  balance         balance[]
+  closing_details closing_details[]
+  movement        movement[]
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -94,4 +96,23 @@ model user {
   closing    closing[]
   movement   movement[]
   rol        rol        @relation(fields: [rol_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model alert_parameter {
+  id       Int    @id @default(autoincrement())
+  variable String @db.VarChar
+  setting  Int
+}
+
+model closing_details {
+  id                Int            @id @default(autoincrement())
+  comments          String?
+  expected_balance  Int
+  counted           Int
+  difference        Int
+  payment_method_id Int
+  closing_id        Int
+  created_at        DateTime?      @db.Timestamp(6)
+  closing           closing        @relation(fields: [closing_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  payment_method    payment_method @relation(fields: [payment_method_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }

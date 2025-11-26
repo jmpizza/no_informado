@@ -21,20 +21,48 @@ export default class AlertRepository {
     }
 
   async getParameters() {
+    const parameters = await this.db.alert_parameter.findMany()
+    return parameters
   }
 
   async setParameters(Parameters){
-    const params = [
-      Parameters.closingCritical,
-      Parameters.closingWarning,
-      Parameters.Timeinterval,
-      Parameters.irregularAmmount,
-      Parameters.AnomalousMovements
-    ]
+    const closingCrit = await this.db.alert_parameter.update({
+      where: {id: 1},
+       data:{
+        setting: Parameters.closureDifferenceThreshold
+       }
+    })
+
+    const closingWarn = await this.db.alert_parameter.update({
+      where: {id: 2},
+       data:{
+        setting: Parameters.minorDifferenceThreshold
+       }
+    })
+
+    const timeInt = await this.db.alert_parameter.update({
+      where: {id: 3},
+       data:{
+        setting: Parameters.anomalousMovementInterval
+       }
+    })
+
+    const irregularAmm = await this.db.alert_parameter.update({
+      where: {id: 4},
+       data:{
+        setting: Parameters.irregularAmountLimit
+       }
+    })
+  
+    const NumberAnomalous = await this.db.alert_parameter.update({
+      where: {id: 5},
+       data:{
+        setting: Parameters.maxAnomalousMovementsPerDay
+       }
+    })
   }
 
   async create(alertData) {
-    console.log(alertData)
     return await this.db.alert.create({
       data: {
         description: alertData.description,
