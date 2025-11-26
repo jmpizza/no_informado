@@ -121,24 +121,48 @@ export default function Cierre({ lastClosure, onClosureConfirmed }) {
 
   const handleConfirmClosure = async () => {
     const currentDate = new Date();
+    const methodsCount = paymentMethods.length;
+
 
     const closingData = {
       total: totals.totalCounted,
       counted: totals.totalCounted,
       expected_balance: totals.totalExpected,
       difference: totals.totalDifference,
-      comments: paymentMethods
-        .filter(pm => pm.observations.trim() !== "")
-        .map(pm => `${pm.name}: ${pm.observations}`)
-        .join(" | ") || "Sin observaciones",
+      comments: `Cierre realizado con ${methodsCount} medios de pago.`,
       created_at: currentDate,
       user_id: 1000000000
     };
 
+  
+
+
     try {
+
       const response = await window.api.createClosing(closingData);
+      
 
       if (!response.success) throw new Error(response.error);
+
+      const newClosingId = response.data.id;
+
+      const closingDetails = paymentMethods.map(pm => ({
+        name: pm.name, 
+        closing_id: newClosingId,
+        expected_balance: Number(pm.expectedAmount) || 0,
+        counted: Number(pm.countedAmount) || 0,
+        comments: pm.observations || null,
+        created_at: currentDate.toISOString()
+      }));
+
+      console.log("closingDetails =>", closingDetails);
+
+      
+
+      const responseDetails = await window.api.createClosingDetails(closingDetails);
+
+      if (!responseDetails.success) throw new Error(responseDetails.error);
+
 
       setShowConfirmationModal(false);
       setClosureCompleted(true);

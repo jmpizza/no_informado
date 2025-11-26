@@ -7,8 +7,7 @@ import PaymentMethodService from "../../src/backend/services/PaymentMethodServic
 import MovementRepository from "../../src/backend/repositories/MovementRepository.js";
 import PaymentMethodRepository from "../../src/backend/repositories/PaymentMethodRepository.js";
 import { getAuthenticatedUser } from "../../src/backend/utils/SessionContext.js";
-import AlertRepository from "../../src/backend/repositories/AlertRepository.js";
-import AlertService from "../../src/backend/services/AlertService.js";
+
 
 export function setupClosingHandlers() {
   const db = DatabaseSingle.getInstance().prisma;
@@ -18,8 +17,7 @@ export function setupClosingHandlers() {
   const paymentMethodRepository = new PaymentMethodRepository(db);
   const paymentMethodService = new PaymentMethodService(paymentMethodRepository);
   const movementRepository = new MovementRepository(db);
-  const alertRepository = new AlertRepository(db)
-  const alertService = new AlertService(alertRepository)
+
 
   const closingService = new ClosingService(
     closingRepository,
@@ -49,22 +47,18 @@ export function setupClosingHandlers() {
         closingData.created_at,
         getAuthenticatedUser()
       );
-      console.log(closing)
-
-      const checkClosing = alertService.checkClosing(closingData.total)
-      const lastClosing = closingService.getLastClosing()
-
-      if (checkClosing!= 0){
-        if (checkClosing == 3){
-          const description = "Este cierre pasa el umbral critico"
-      } else {
-          const description = "Este cierre paso el umbral de advertencia"
-        }
-        const alert = alertService.createAlertClosing(getAuthenticatedUser(), description, lastClosing.id)
-      }
-
-
       return { success: true, data: closing };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle("closing:createDetails", async (event, closingDetails) => {
+    //console.log("🔥🔥 closingDetails recibido en HANDLER:", closingDetails);
+
+    try {
+      const result = await closingService.createClosingDetails(closingDetails); 
+      return { success: true, data: result };
     } catch (error) {
       return { success: false, error: error.message };
     }

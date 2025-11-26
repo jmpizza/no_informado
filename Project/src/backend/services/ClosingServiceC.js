@@ -75,5 +75,30 @@ export default class ClosingService {
       difference: last.difference,
       totalDifference: last.difference, // <-- AQUÍ lo igualas
     };
-}
-} 
+  }
+
+  async createClosingDetails(closingDetails) {
+    //console.log("👉 closingDetails recibido en SERVICE:", closingDetails);
+
+    const enriched = [];
+
+    for (const detail of closingDetails) {
+      const paymentMethod = await this.paymentMethodRepository.findByName(detail.name);
+
+      enriched.push({
+        comments: detail.comments || null,
+        expected_balance: detail.expected_balance,
+        counted: detail.counted,
+        difference: detail.counted - detail.expected_balance,
+        payment_method_id: paymentMethod.id,
+        closing_id: detail.closing_id,
+        created_at: detail.created_at,
+      });
+    }
+
+    //console.log("👉 closingDetails salido en SERVICE:", enriched);
+
+    return await this.closingRepository.createClosingDetails(enriched);
+  }
+
+}  

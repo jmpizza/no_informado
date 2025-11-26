@@ -32,7 +32,12 @@ try {
       ipcRenderer.invoke("closing:create", closingData),
     getLastClosing: () =>
       ipcRenderer.invoke("closing:getLastClosing"),
-
+    createClosingDetails: (closingDetails) =>
+      ipcRenderer.invoke("closing:createDetails", closingDetails),
+    generateClosingAlert: (alertClosingData) => 
+      ipcRenderer.invoke("alert:generateClosingAlert", alertClosingData),
+    generateMomvementAlert: (alertMovementData) => 
+      ipcRenderer.invoke("alert:generateMovementAlert", alertMovementData),
     setParameters: (alertData) =>
       ipcRenderer.invoke("alert:setParameters", alertData),
   });
