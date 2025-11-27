@@ -44,6 +44,12 @@ try {
       ipcRenderer.invoke("closing:getAllClosures"),
     calculateDifference: (expected, counted) =>
       ipcRenderer.invoke("closing:calculateDifference", { expected, counted }),
+    checkIrregularMovement: (movementData) =>
+      ipcRenderer.invoke("alert:checkIrregularMovement", movementData),
+    checkClosing: (movementData) =>
+      ipcRenderer.invoke("alert:checkClosing", movementData),
+    checkTimeInterval: () =>
+      ipcRenderer.invoke("alert:checkTimeInterval"),
   });
 } catch (error) {
   console.error("Error en preload script:", error);

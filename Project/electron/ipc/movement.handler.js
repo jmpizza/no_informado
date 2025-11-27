@@ -33,14 +33,6 @@ export function setupMovementHandlers() {
         movementData.payment_method_id,
         movementData.closing_id
       );
-      if (await alertService.checkIrregularMovement(movementData.ammount)){
-      
-        const alert = await alertService.createAlertMovement(
-          movementData.user_id,
-          movement.id,
-          movement.closing_id,
-        )
-      }
       return { success: true, data: movement };
     } catch (error) {
       return { success: false, error: error.message };

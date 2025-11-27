@@ -17,6 +17,37 @@ export default class AlertService {
         const alert = await this.AlertRepository.create(alertData)
     }
 
+    async checkTimeInterval(time){
+
+        console.log(time)
+        const parameters = await this.AlertRepository.getParameters()
+        const timeIntervalInMiliseconds = (parameters[2].setting) * (1000 * 60)
+
+        const nowTime = (new Date())
+        const timeInterval = nowTime - time
+
+
+        if (timeInterval < timeIntervalInMiliseconds){
+            return true
+        }
+        return false
+    }
+
+    async createAlertTime(user){
+
+        const alertData = {
+            description: "Esta dentro del intervalo de tiempo anomalo",
+            parameter: 1,
+            created_at: new Date(),
+            user_id: user,
+            movement_id: null,
+            closing_id: null,
+        }
+
+        const alert = await this.AlertRepository.create(alertData)
+
+    }
+
     async createAlertClosing (user, description, closing_id){
 
         const alertData = {
@@ -28,15 +59,15 @@ export default class AlertService {
             closing_id: closing_id,
         }
 
-        const alert = await this.AlertRepository(alertData)
+        const alert = await this.AlertRepository.create(alertData)
         
     }
 
     async checkClosing(Total){
         
-        const parameters = (await this.AlertRepository.getParameters())
-        const closingCritical = (parameters[0]).setting
-        const closingWarning = (parameters[1]).setting
+        const parameters = await this.AlertRepository.getParameters()
+        const closingCritical =  parameters[0].setting
+        const closingWarning = parameters[1].setting
 
         if (Total < 0){
             return 3
@@ -54,8 +85,8 @@ export default class AlertService {
     }
 
     async checkIrregularMovement(ammount){
-        const parameters = (await this.AlertRepository.getParameters())
-        const irregularAmmount = (parameters[3]).setting
+        const parameters = await this.AlertRepository.getParameters()
+        const irregularAmmount = parameters[3].setting
 
         if (ammount > irregularAmmount){
             return true

@@ -138,7 +138,9 @@ export default function MovimientoCaja() {
                 closing_id: null,
             };
 
+            const timealert = await window.api.checkTimeInterval();
             const response = await window.api.createMovement(movementData);
+            const alert = await window.api.checkIrregularMovement(movementData);
 
             if (response.success) {
                 showToast("success", `Movimiento registrado exitosamente`);

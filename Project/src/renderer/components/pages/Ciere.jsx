@@ -131,7 +131,7 @@ export default function Cierre({ lastClosure, onClosureConfirmed }) {
       difference: totals.totalDifference,
       comments: `Cierre realizado con ${methodsCount} medios de pago.`,
       created_at: currentDate,
-      user_id: 1000000000
+      user_id: 1000000000 
     };
 
   
@@ -140,6 +140,7 @@ export default function Cierre({ lastClosure, onClosureConfirmed }) {
     try {
 
       const response = await window.api.createClosing(closingData);
+      const alert = await window.api.checkClosing(closingData);
       
 
       if (!response.success) throw new Error(response.error);
