@@ -101,4 +101,24 @@ export default class ClosingService {
     return await this.closingRepository.createClosingDetails(enriched);
   }
 
+  async getAllClosures(filters = {}) {
+    const rawClosures = await this.closingRepository.findAll(filters);
+
+    // Mapeamos al formato que CloseHistory espera
+    const formattedClosures = rawClosures.map(c => ({
+      closureNumber: c.id,
+      date: new Date(c.created_at).toLocaleString("es-CO"), // o como quieras formatearlo
+      operator: c.user.name,
+      totalDifference: c.difference,
+    }));
+    
+    console.log("🔥🔥 closings recibido en servicio:", formattedClosures);
+
+    return formattedClosures;
+}
+
+calculateDifference(expected, counted) {
+  return counted - expected;
+}
+
 }  

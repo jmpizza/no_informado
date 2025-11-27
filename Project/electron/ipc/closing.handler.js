@@ -72,4 +72,25 @@ export function setupClosingHandlers() {
       return { success: false, error: error.message };
     }
   });
+
+  ipcMain.handle("closing:getAllClosures", async (event) => {
+    try {
+      const closures = await closingService.getAllClosures();
+      console.log("🔥🔥 closures recibido en HANDLER:", closures);
+
+      return { success: true, data: closures };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle("closing:calculateDifference", (event, { expected, counted }) => {
+    try {
+      const difference = closingService.calculateDifference(expected, counted);
+      return { success: true, data: difference };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  })
+  
 }

@@ -40,6 +40,10 @@ try {
       ipcRenderer.invoke("alert:generateMovementAlert", alertMovementData),
     setParameters: (alertData) =>
       ipcRenderer.invoke("alert:setParameters", alertData),
+    getClosures: () => 
+      ipcRenderer.invoke("closing:getAllClosures"),
+    calculateDifference: (expected, counted) =>
+      ipcRenderer.invoke("closing:calculateDifference", { expected, counted }),
   });
 } catch (error) {
   console.error("Error en preload script:", error);
