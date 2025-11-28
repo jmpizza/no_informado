@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { History, Lock, X, AlertCircle, Search, Download, FileText, FileSpreadsheet } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { ICON_MAP } from "../../../constants/iconMap.js";
+
 
 function Label({ children, className }) {
 return <label className={className}>{children}</label>;
@@ -13,11 +15,16 @@ return <label className={className}>{children}</label>;
 export default function CloseHistory({ clousures, preselectedClosureId, onClosureViewed }) {
 const [clousuresList, setclousuresList] = useState(clousures || []);
 const [selectedClosure, setSelectedClosure] = useState(null);
+const [selectedClosureDetails, setSelection] = useState(null);
 const [searchTerm, setSearchTerm] = useState('');
 const [dateFilter, setDateFilter] = useState('all');
 const [sortBy, setSortBy] = useState('date-desc');
 const [showExportModal, setShowExportModal] = useState(false);
 const [showClosureExportModal, setShowClosureExportModal] = useState(false);
+
+useEffect(() => {
+}, [selectedClosure]);
+
 
 const exportAllClousuresList =  async () => {
   try {
@@ -36,6 +43,29 @@ const exportAllClousuresList =  async () => {
 useEffect(() => {
     exportAllClousuresList();
   }, []);
+
+const getClousureDetails = async (closing_id) => {
+  try {
+    const response = await window.api.getClosureDetails(closing_id);
+    if (!response.success) throw new Error(response.error);
+
+    setSelection(response.data);
+   
+  } catch (err) {
+    console.error("Error al obtener detalles del cierre:", err);
+  }
+};
+
+useEffect(() => {
+  if (selectedClosureDetails) {
+    setSelectedClosure((prev) => ({
+      ...prev,
+      ...selectedClosureDetails
+    }));
+
+    console.log("🔵 selectedClosure actualizado con detalles:", selectedClosureDetails);
+  }
+}, [selectedClosureDetails]);
 
 
 const getStatusColor = (difference) => {
@@ -56,82 +86,155 @@ if (difference === 0) return 'bg-green-500';
 return 'bg-green-500';
 };
 
-const filterAndSortclousuresList = () => {
-  if (!clousuresList || !Array.isArray(clousuresList)) return [];
+// Constante para capturar la fecha de inicio y fin separadas por un guion
+const DATE_RANGE_REGEX = /^(.*?)(\s*-\s*)(.*)$/; 
 
-  let filtered = [...clousuresList]; // copiar array antes de sort
+const parseClosureDate = (str) => {
+  // str puede ser "26/11/2025, 2:12:45 a. m." o "26/11/2025"
+  const [datePart, timePart] = str.split(",");
+  const parts = datePart.trim().split("/");
 
-  if (searchTerm) {
-    const trimmed = searchTerm.trim();
+  if (parts.length < 3) return null;
 
-    // Caso 1: búsqueda por número de cierre (#123)
-    if (trimmed.startsWith("#")) {
-      const num = parseInt(trimmed.slice(1), 10);
-      if (!isNaN(num)) {
-        filtered = filtered.filter(closure => closure.closureNumber === num);
-      }
-    }
-    // Caso 2 y 3: búsqueda por rango de fechas (con o sin hora)
-    else if (trimmed.includes("-")) {
-      const [startStr, endStr] = trimmed.split("-").map(s => s.trim());
+  const [d, m, y] = parts.map(p => parseInt(p, 10));
 
-      const parseDate = (str) => {
-        // Si viene con hora: dd/mm/yyyy:hh:mm:ss
-        if (str.includes(":")) return new Date(str.replace(/(\d{2})\/(\d{2})\/(\d{4}):/, "$3-$2-$1T"));
-        // Solo fecha dd/mm/yyyy
-        const [d, m, y] = str.split("/");
-        return new Date(`${y}-${m}-${d}`);
-      };
+  // CORRECCIÓN CLAVE: Usamos Date.UTC para que la fecha sea consistente
+  // (m - 1 porque el mes es 0-indexado)
+  let date = new Date(Date.UTC(y, m - 1, d)); // La fecha se crea a medianoche UTC
 
-      const startDate = parseDate(startStr);
-      const endDate = parseDate(endStr);
+  if (timePart) {
+    try {
+      let [h, min, sec] = timePart.trim().split(":");
+      h = parseInt(h, 10);
 
-      filtered = filtered.filter(closure => {
-        const closureDate = new Date(closure.date);
-        return closureDate >= startDate && closureDate <= endDate;
-      });
-    }
-    // Caso 4: búsqueda normal por operador o texto en la fecha
-    else {
-      filtered = filtered.filter(closure =>
-        closure.operator.toLowerCase().includes(trimmed.toLowerCase()) ||
-        closure.date.toLowerCase().includes(trimmed.toLowerCase())
-      );
-    }
-  }
+      const isPM = timePart.toLowerCase().includes("p");
+      const isAM = timePart.toLowerCase().includes("a");
 
-  // Filtrado por fecha preseleccionada (today, week, month)
-  if (dateFilter !== 'all') {
-    const now = new Date();
-    filtered = filtered.filter((closure) => {
-      const closureDate = new Date(closure.date);
-      switch (dateFilter) {
-        case 'today':
-          return closureDate.toDateString() === now.toDateString();
-        case 'week':
-          return closureDate >= new Date(now.getTime() - 7 * 86400000);
-        case 'month':
-          return closureDate >= new Date(now.getTime() - 30 * 86400000);
-        default:
-          return true;
-      }
-    });
-  }
+      // Conversión a 24h
+      if (isPM && h !== 12) h += 12;
+      if (isAM && h === 12) h = 0; // 12 a.m. (medianoche) es 0 horas
 
-  // Ordenamiento
-  filtered.sort((a, b) => {
-    switch (sortBy) {
-      case 'date-desc': return b.closureNumber - a.closureNumber;
-      case 'date-asc': return a.closureNumber - b.closureNumber;
-      case 'amount-desc': return Math.abs(b.totalDifference) - Math.abs(a.totalDifference);
-      case 'amount-asc': return Math.abs(a.totalDifference) - Math.abs(b.totalDifference);
-      default: return 0;
-    }
-  });
+      // CORRECCIÓN CLAVE: Usamos setUTCHours para aplicar la hora sin desviarnos
+      date.setUTCHours(h, parseInt(min, 10), parseInt(sec, 10));
+    } catch (e) {
+      console.error("Error al parsear la hora:", timePart, e);
+    }
+  }
 
-  return filtered;
+  return date;
 };
 
+const filterAndSortclousuresList = () => {
+  if (!clousuresList || !Array.isArray(clousuresList)) return [];
+
+  let filtered = [...clousuresList];
+
+  // ----------------------------------------------------
+  // --- 1. BÚSQUEDA Y FILTRADO INICIAL (RANGO ESPECÍFICO) ---
+  // ----------------------------------------------------
+  if (searchTerm) {
+    const trimmed = searchTerm.trim();
+
+    // Caso 1: búsqueda por número de cierre (#123)
+    if (trimmed.startsWith("#")) {
+      const num = parseInt(trimmed.slice(1), 10);
+      if (!isNaN(num)) {
+        filtered = filtered.filter(closure => closure.closureNumber === num);
+      }
+    } 
+    // ✅ Caso 2: RANGO ESPECÍFICO (usando REGEX para detectar y filtrar)
+    else if (DATE_RANGE_REGEX.test(trimmed)) {
+      
+      const match = trimmed.match(DATE_RANGE_REGEX);
+      if (match && match.length >= 4) {
+        const startStr = match[1].trim(); 
+        const endStr = match[3].trim();  
+
+        const startDate = parseClosureDate(startStr);
+        let endDate = parseClosureDate(endStr);
+        
+        if (startDate && endDate) {
+          
+          // Si no se especificó la hora en la fecha de fin, asumimos hasta el final del día.
+          if (!endStr.includes(',')) {
+            endDate.setUTCHours(23, 59, 59, 999);
+          }
+
+          filtered = filtered.filter(closure => {
+            const closureDate = parseClosureDate(closure.date);
+            return closureDate && closureDate.getTime() >= startDate.getTime() && closureDate.getTime() <= endDate.getTime();
+          });
+        }
+      }
+    } 
+    // Caso 3: búsqueda normal por operador o texto en la fecha
+    else {
+      filtered = filtered.filter(closure =>
+        closure.operator.toLowerCase().includes(trimmed.toLowerCase()) ||
+        closure.date.toLowerCase().includes(trimmed.toLowerCase())
+      );
+    }
+  }
+
+  // ----------------------------------------------------
+  // --- 2. FILTRO POR FECHA PRESELECCIONADA (Hoy, Semana, Mes) ---
+  // ----------------------------------------------------
+  if (dateFilter !== 'all') {
+    const now = new Date();
+
+    filtered = filtered.filter((closure) => {
+      const closureDate = parseClosureDate(closure.date);
+      if (!closureDate || isNaN(closureDate.getTime())) return false;
+
+      switch (dateFilter) {
+        case 'today': {
+          const y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
+          
+          // Medianoche UTC de HOY (según el calendario local)
+          const todayStart = new Date(Date.UTC(y, m, d));
+          
+          // Medianoche UTC de MAÑANA (según el calendario local)
+          const tomorrowStart = new Date(todayStart);
+          tomorrowStart.setUTCDate(todayStart.getUTCDate() + 1);
+
+          return closureDate.getTime() >= todayStart.getTime() && closureDate.getTime() < tomorrowStart.getTime();
+        }
+
+        case 'week': {
+          const weekAgo = new Date(now);
+          weekAgo.setDate(now.getDate() - 7);
+          weekAgo.setHours(0, 0, 0, 0);
+          return closureDate.getTime() >= weekAgo.getTime() && closureDate.getTime() <= now.getTime();
+        }
+
+        case 'month': {
+          const monthAgo = new Date(now);
+          monthAgo.setMonth(now.getMonth() - 1);
+          monthAgo.setHours(0, 0, 0, 0);
+          return closureDate.getTime() >= monthAgo.getTime() && closureDate.getTime() <= now.getTime();
+        }
+
+        default:
+          return true;
+      }
+    });
+  }
+
+  // ----------------------------------------------------
+  // --- 3. ORDENAMIENTO FINAL ---
+  // ----------------------------------------------------
+  filtered.sort((a, b) => {
+    switch (sortBy) {
+      case 'date-desc': return b.closureNumber - a.closureNumber;
+      case 'date-asc': return a.closureNumber - b.closureNumber;
+      case 'amount-desc': return b.totalDifference - a.totalDifference;
+      case 'amount-asc': return a.totalDifference - b.totalDifference;
+      default: return 0;
+    }
+  });
+
+  return filtered;
+};
 
 const filteredclousuresList = filterAndSortclousuresList();
 
@@ -148,14 +251,22 @@ setShowClosureExportModal(false);
 };
 
 useEffect(() => {
-if (preselectedClosureId && clousuresList.length > 0) {
-const closure = clousuresList.find((c) => c.id === preselectedClosureId);
+if (preselectedClosureId && closures.length > 0) {
+const closure = closures.find((c) => c.id === preselectedClosureId);
 if (closure) {
 setSelectedClosure(closure);
+console.log("🔵 closure preseleccionado:", closure);
 if (onClosureViewed) onClosureViewed();
 }
 }
-}, [preselectedClosureId, clousuresList, onClosureViewed]);
+}, [preselectedClosureId, clousures, onClosureViewed]);
+
+
+
+
+
+
+
 
 return ( <div className="p-8 max-w-7xl mx-auto">
 {/* HEADER */} <div className="mb-8"> <div className="flex items-center justify-between"> <div> <div className="flex items-center gap-3 mb-2"> <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center"> <History className="w-5 h-5 text-blue-600" /> </div> <h1 className="text-gray-900">Historial de cajas</h1> </div> <p className="text-gray-600">Visualiza todos los cierres de caja registrados en el sistema</p> </div>
@@ -229,7 +340,10 @@ return ( <div className="p-8 max-w-7xl mx-auto">
         return (
           <button
             key={closure.closureNumber}
-            onClick={() => setSelectedClosure(closure)}
+            onClick={() => {
+              setSelectedClosure(closure);
+              getClousureDetails(closure.closureNumber);
+            }}
             className="w-full bg-white rounded-lg border p-6 hover:shadow-md transition-shadow text-left"
           >
             <div className="flex items-center justify-between">
@@ -272,19 +386,22 @@ return ( <div className="p-8 max-w-7xl mx-auto">
 
   {/* MODALES (no tocados, JSX igual a TSX) */}
   {/* Detail Modal */}
-      {selectedClosure && (
+      {selectedClosureDetails && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
           <div className="bg-white rounded-lg max-w-3xl w-full my-8">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 ${getStatusBadgeColor(selectedClosure.totalDifference)} rounded-lg flex items-center justify-center`}>
-                  <span className="text-white">#{selectedClosure.closureNumber}</span>
+                <div className={`w-10 h-10 ${getStatusBadgeColor(selectedClosureDetails.totalDifference)} rounded-lg flex items-center justify-center`}>
+                  <span className="text-white">#{selectedClosureDetails.closureNumber}</span>
                 </div>
                 <h2 className="text-gray-900">Detalle del cierre de caja</h2>
               </div>
               <button
-                onClick={() => setSelectedClosure(null)}
+                onClick={() => {
+                  setSelectedClosure(null);
+                  setSelection(null);
+                }}
                 className="text-gray-400 hover:text-gray-600"
               >
                 <X className="w-5 h-5" />
@@ -298,11 +415,11 @@ return ( <div className="p-8 max-w-7xl mx-auto">
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div>
                     <p className="text-gray-500 text-sm mb-1">Operador de cierre</p>
-                    <p className="text-blue-600">{selectedClosure.operator}</p>
+                    <p className="text-blue-600">{selectedClosureDetails.operator}</p>
                   </div>
                   <div>
                     <p className="text-gray-500 text-sm mb-1">Fecha y hora</p>
-                    <p className="text-gray-900">{selectedClosure.date}</p>
+                    <p className="text-gray-900">{selectedClosureDetails.date}</p>
                   </div>
                 </div>
                 
@@ -310,16 +427,16 @@ return ( <div className="p-8 max-w-7xl mx-auto">
                   <div className="grid grid-cols-3 gap-4">
                     <div>
                       <p className="text-gray-500 text-sm mb-1">Total esperado</p>
-                      <p className="text-gray-900">$ {selectedClosure.totalExpected.toLocaleString('es-CO')}</p>
+                      <p className="text-gray-900">$ {selectedClosureDetails.totalExpected.toLocaleString('es-CO')}</p>
                     </div>
                     <div>
                       <p className="text-gray-500 text-sm mb-1">Total contado</p>
-                      <p className="text-gray-900">$ {selectedClosure.totalCounted.toLocaleString('es-CO')}</p>
+                      <p className="text-gray-900">$ {selectedClosureDetails.totalCounted.toLocaleString('es-CO')}</p>
                     </div>
                     <div>
                       <p className="text-gray-500 text-sm mb-1">Diferencia neta</p>
-                      <p className={getStatusColor(selectedClosure.totalDifference).text}>
-                        {selectedClosure.totalDifference >= 0 ? '+' : ''} $ {selectedClosure.totalDifference.toLocaleString('es-CO')}
+                      <p className={getStatusColor(selectedClosureDetails.totalDifference).text}>
+                        {selectedClosureDetails.totalDifference >= 0 ? '+' : ''} $ {selectedClosureDetails.totalDifference.toLocaleString('es-CO')}
                       </p>
                     </div>
                   </div>
@@ -330,10 +447,10 @@ return ( <div className="p-8 max-w-7xl mx-auto">
               <div>
                 <h3 className="mb-4 text-gray-900">Detalle por medio de pago</h3>
                 <div className="space-y-3">
-                  {selectedClosure.paymentMethods.map((pm) => {
+                  {selectedClosureDetails.paymentMethods.map((pm) => {
                     const difference = pm.countedAmount - pm.expectedAmount;
                     const statusColor = getStatusColor(difference);
-                    const Icon = pm.icon;
+                    const Icon = ICON_MAP[pm.name] || AlertCircle;
                     
                     return (
                       <div key={pm.id} className={`p-4 rounded-lg border ${statusColor.border} ${statusColor.bg}`}>
@@ -371,21 +488,21 @@ return ( <div className="p-8 max-w-7xl mx-auto">
               </div>
 
               {/* Status Message */}
-              {selectedClosure.totalDifference < 0 ? (
+              {selectedClosureDetails.totalDifference < 0 ? (
                 <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg flex items-start gap-3">
                   <AlertCircle className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="text-orange-800">
-                      Faltante registrado de $ {Math.abs(selectedClosure.totalDifference).toLocaleString('es-CO')}.
+                      Faltante registrado de $ {Math.abs(selectedClosureDetails.totalDifference).toLocaleString('es-CO')}.
                     </p>
                   </div>
                 </div>
-              ) : selectedClosure.totalDifference > 0 ? (
+              ) : selectedClosureDetails.totalDifference > 0 ? (
                 <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-3">
                   <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="text-blue-800">
-                      Sobrante registrado de $ {selectedClosure.totalDifference.toLocaleString('es-CO')}.
+                      Sobrante registrado de $ {selectedClosureDetails.totalDifference.toLocaleString('es-CO')}.
                     </p>
                   </div>
                 </div>
@@ -412,7 +529,10 @@ return ( <div className="p-8 max-w-7xl mx-auto">
                 Exportar
               </Button>
               <Button
-                onClick={() => setSelectedClosure(null)}
+                onClick={() => {
+                  setSelectedClosure(null);
+                  setSelection(null);
+                }}
                 className="flex-1 bg-blue-600 hover:bg-blue-700"
               >
                 Cerrar
@@ -421,7 +541,6 @@ return ( <div className="p-8 max-w-7xl mx-auto">
           </div>
         </div>
       )}
-      {/* Export All Modal */}
       {/* Export All Modal */}
       {showExportModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">

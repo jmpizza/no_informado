@@ -87,4 +87,39 @@ export default class ClosingRepository {
       }))
     });
   }
+
+  async getClosureWithDetails(id) {
+    return await this.db.closing.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        created_at: true,
+        expected_balance: true,
+        counted: true,
+        difference: true,
+        user: {
+          select: {
+            name: true,
+            last_name: true
+          }
+        },
+        closing_details: {
+          select: {
+            id: true,
+            expected_balance: true,
+            counted: true,
+            comments: true,
+            difference: true,
+            payment_method: {
+              select: {
+                name: true
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+
 }

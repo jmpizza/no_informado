@@ -76,8 +76,6 @@ export function setupClosingHandlers() {
   ipcMain.handle("closing:getAllClosures", async (event) => {
     try {
       const closures = await closingService.getAllClosures();
-      console.log("🔥🔥 closures recibido en HANDLER:", closures);
-
       return { success: true, data: closures };
     } catch (error) {
       return { success: false, error: error.message };
@@ -91,6 +89,14 @@ export function setupClosingHandlers() {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  })
-  
+  });
+
+  ipcMain.handle("closing:getClosureDetails", async (event, closing_id) => {
+    try {
+      const closureDetails = await closingService.getClosureWithDetails(closing_id);
+      return { success: true, data: closureDetails };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  });
 }

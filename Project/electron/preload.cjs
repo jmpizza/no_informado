@@ -44,6 +44,8 @@ try {
       ipcRenderer.invoke("closing:getAllClosures"),
     calculateDifference: (expected, counted) =>
       ipcRenderer.invoke("closing:calculateDifference", { expected, counted }),
+    getClosureDetails: (closing_id) =>
+      ipcRenderer.invoke("closing:getClosureDetails", closing_id),
   });
 } catch (error) {
   console.error("Error en preload script:", error);

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { X , ArrowUp, AlertCircle } from "lucide-react";
+import { X , ArrowUp, AlertCircle, Rocket } from "lucide-react";
 
 
 export default function MovimientoCaja() {

@@ -73,7 +73,7 @@ export default class ClosingService {
       date: last.created_at.toISOString(),
       user: last.user,
       difference: last.difference,
-      totalDifference: last.difference, // <-- AQUÍ lo igualas
+      totalDifference: last.difference, 
     };
   }
 
@@ -104,21 +104,47 @@ export default class ClosingService {
   async getAllClosures(filters = {}) {
     const rawClosures = await this.closingRepository.findAll(filters);
 
-    // Mapeamos al formato que CloseHistory espera
     const formattedClosures = rawClosures.map(c => ({
       closureNumber: c.id,
-      date: new Date(c.created_at).toLocaleString("es-CO"), // o como quieras formatearlo
+      date: new Date(c.created_at).toLocaleString("es-CO"), 
       operator: c.user.name,
       totalDifference: c.difference,
     }));
     
-    console.log("🔥🔥 closings recibido en servicio:", formattedClosures);
-
     return formattedClosures;
 }
 
 calculateDifference(expected, counted) {
   return counted - expected;
+}
+
+async getClosureWithDetails(id) {
+  const closure = await this.closingRepository.getClosureWithDetails(id);
+
+  if (!closure) {
+    throw new NotFoundException(`Cierre con id ${id} no encontrado`);
+  }
+
+  //console.log("🔴 closure obtenido:", closure);
+
+  return {
+    id: closure.id,
+    closureNumber: closure.id, // si tienes un campo real, cámbialo
+    operator: `${closure.user.name} ${closure.user.last_name}`,
+    date: (closure.created_at).toLocaleString("es-CO"),
+    totalExpected: closure.expected_balance,
+    totalCounted: closure.counted,
+    totalDifference: closure.difference,
+
+    paymentMethods: closure.closing_details.map((d) => ({
+      id: d.id,
+      name: d.payment_method.name,
+      expectedAmount: d.expected_balance,
+      countedAmount: d.counted,
+      observations: d.comments,
+      difference: d.difference
+    }))
+  };
 }
 
 }  

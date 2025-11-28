@@ -34,9 +34,9 @@ export default class AlertService {
 
     async checkClosing(Total){
         
-        const parameters = (await this.AlertRepository.getParameters())
-        const closingCritical = (parameters[0]).setting
-        const closingWarning = (parameters[1]).setting
+        const parameters = await this.AlertRepository.getParameters()
+        const closingCritical = await parameters[0].setting
+        const closingWarning = await parameters[1].setting
 
         if (Total < 0){
             return 3
@@ -54,8 +54,8 @@ export default class AlertService {
     }
 
     async checkIrregularMovement(ammount){
-        const parameters = (await this.AlertRepository.getParameters())
-        const irregularAmmount = (parameters[3]).setting
+        const parameters = await this.AlertRepository.getParameters()
+        const irregularAmmount = await parameters[3].setting
 
         if (ammount > irregularAmmount){
             return true
