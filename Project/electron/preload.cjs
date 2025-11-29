@@ -44,8 +44,17 @@ try {
       ipcRenderer.invoke("closing:getAllClosures"),
     calculateDifference: (expected, counted) =>
       ipcRenderer.invoke("closing:calculateDifference", { expected, counted }),
+<<<<<<< HEAD
     getClosureDetails: (closing_id) =>
       ipcRenderer.invoke("closing:getClosureDetails", closing_id),
+=======
+    checkIrregularMovement: (movementData) =>
+      ipcRenderer.invoke("alert:checkIrregularMovement", movementData),
+    checkClosing: (movementData) =>
+      ipcRenderer.invoke("alert:checkClosing", movementData),
+    checkTimeInterval: () =>
+      ipcRenderer.invoke("alert:checkTimeInterval"),
+>>>>>>> 2346b421fb22914212132865c35214c45d96bcc9
   });
 } catch (error) {
   console.error("Error en preload script:", error);
