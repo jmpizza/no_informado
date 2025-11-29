@@ -52,4 +52,39 @@ export default class ExportService{
     }
     doc.save('Reporte.pdf');
  }
+
+ async  exportAllClosings(closure){
+    const closings = closure.data
+    var doc = new jsPDF();
+    
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour:'numeric' };
+    const now = String((new Date()).toLocaleString('es-co', options))
+    const start = closings[closings.length - 1]['date']
+
+    doc.setFontSize(30);
+    doc.text(40, 30, 'Reporte Total de Cierres');
+    doc.setFontSize(12);
+    doc.text(
+        20,
+        40, 
+        'Este reporte fue generado el ' + now + ' y corresponde a ' + closings.length + ' cierres que empiezan '
+        + 'desde el ' + start,
+        {maxWidth: 170});
+
+    doc.setFont('Helvetica', 'bold')
+    doc.text(20,60,'Listado de cierres:')
+    doc.setFont('Helvetica', 'normal')
+
+    let yValue = 70
+    for (let i = 0; i < closings.length; i++) {
+        let date = closings[i].date
+        const betterDate = String(date.toLocaleString('en-us',options))
+        doc.text(20, yValue, 
+          'Cierre #: ' + closings[i]["closureNumber"] + " | Fecha: " + betterDate + "| Diferencia: " + closings[i].totalDifference),
+        yValue = yValue + 10
+    }
+
+    doc.save('ReporteTotal.pdf');
+    
+ }
 }

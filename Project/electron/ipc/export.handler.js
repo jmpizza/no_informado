@@ -37,5 +37,15 @@ export function setupExportHandlers() {
     } catch (error) {
       return { success: false, error: error.message };
     }
+    
+  })
+
+  ipcMain.handle("export:exportAllClosings", async (event, closures) => {
+    try {
+      const exportClosing = await exportService.exportAllClosings(closures)
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
   })
 }

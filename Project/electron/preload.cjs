@@ -64,6 +64,7 @@ try {
       ipcRenderer.invoke("closing:getClosureDetails", closing_id),
 
     exportToPdf: (closure) => ipcRenderer.invoke("export:exportToPdf", closure),
+    exportAllClosings: (closure) => ipcRenderer.invoke("export:exportAllClosings", closure),
   });
 } catch (error) {
   console.error("Error en preload script:", error);

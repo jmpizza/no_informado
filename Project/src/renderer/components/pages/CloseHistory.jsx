@@ -43,8 +43,7 @@ const fectParameters = async () => {
 
 const exportAllClousuresList =  async () => {
   try {
-
-    const response = await window.api.getClosures();
+     const response = await window.api.getClosures();
     if (!response.success) throw new Error(response.error);
 
     setclousuresList(response.data);
@@ -269,7 +268,11 @@ const filterAndSortclousuresList = () => {
 
 const filteredclousuresList = filterAndSortclousuresList();
 
-const handleExportAll = (format) => {
+const handleExportAll = async (format) => {
+
+    const response = await window.api.getClosures();
+    const exportAll = await window.api.exportAllClosings(response)
+
 alert(`Exportando ${filteredclousuresList.length} cierres en formato ${format.toUpperCase()}`);
 setShowExportModal(false);
 };
@@ -588,7 +591,7 @@ return ( <div className="p-8 max-w-7xl mx-auto">
             </div>
 
             <p className="text-gray-600 mb-6">
-              Selecciona el formato para exportar {filteredClosures.length} cierres
+              Selecciona el formato para exportar {filteredclousuresList.length} cierres
             </p>
 
             <div className="space-y-3">
