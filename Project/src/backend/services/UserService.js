@@ -3,6 +3,7 @@ import CreateUserDTO from "../dto/CreateUserDTO.js";
 import { ValidationException } from "../exceptions/ValidationException.js";
 import { NotFoundException } from "../exceptions/NotFoundException.js";
 
+
 export default class UserService {
   constructor(userRepository, roleRepository) {
     this.userRepository = userRepository;
@@ -41,4 +42,19 @@ export default class UserService {
     };
     return await this.userRepository.create(userData);
   }
+
+  async getUserInfo(user_id) {
+    const userinfo = await this.userRepository.findById(user_id);
+    if (!userinfo) {
+      throw new NotFoundException(`Usuario con id ${user_id} no encontrado`);
+    }
+    return {
+      name: userinfo.name,
+      lastName: userinfo.last_name,
+      rol: {
+        name: userinfo.rol.name,
+      }
+    };
+  }
+
 }

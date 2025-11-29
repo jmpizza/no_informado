@@ -63,7 +63,6 @@ useEffect(() => {
       ...selectedClosureDetails
     }));
 
-    console.log("🔵 selectedClosure actualizado con detalles:", selectedClosureDetails);
   }
 }, [selectedClosureDetails]);
 

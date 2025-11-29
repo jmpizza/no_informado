@@ -45,7 +45,8 @@ try {
     getClosures: () => 
       ipcRenderer.invoke("closing:getAllClosures"),
     calculateDifference: (expected, counted) =>
-      ipcRenderer.invoke("closing:calculateDifference", { expected, counted }),
+      ipcRenderer.invoke("closing:calculateDifference", { expected: Number(expected), 
+      counted: Number(counted) }),
     getClosureDetails: (closing_id) =>
       ipcRenderer.invoke("closing:getClosureDetails", closing_id),
     checkIrregularMovement: (movementData) =>
@@ -54,6 +55,8 @@ try {
       ipcRenderer.invoke("alert:checkClosing", movementData),
     checkTimeInterval: () =>
       ipcRenderer.invoke("alert:checkTimeInterval"),
+    getUserInfo: () =>
+      ipcRenderer.invoke("user:getUserInfo"),
   });
 } catch (error) {
   console.error("Error en preload script:", error);

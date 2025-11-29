@@ -115,8 +115,11 @@ export default class ClosingService {
 }
 
 calculateDifference(expected, counted) {
-  return counted - expected;
+  const exp = Number(expected) || 0;
+  const cnt = Number(counted) || 0;
+  return cnt - exp;
 }
+
 
 async getClosureWithDetails(id) {
   const closure = await this.closingRepository.getClosureWithDetails(id);

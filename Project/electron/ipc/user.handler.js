@@ -3,6 +3,8 @@ import DatabaseSingle from "../db/DatabaseSingle.js";
 import UserService from "../../src/backend/services/UserService.js";
 import UserRepository from "../../src/backend/repositories/UserRepository.js";
 import RoleRepository from "../../src/backend/repositories/RoleRepository.js";
+import { getAuthenticatedUser } from "../../src/backend/utils/SessionContext.js";
+
 
 export function setupUserHandlers() {
   const db = DatabaseSingle.getInstance().prisma;
@@ -27,4 +29,14 @@ export function setupUserHandlers() {
       return { success: false, error: error.message };
     }
   });
+
+  ipcMain.handle("user:getUserInfo", async (event) => {
+    try {
+      const userInfo = await userService.getUserInfo(getAuthenticatedUser());
+      return { success: true, data: userInfo };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  });
+
 }
