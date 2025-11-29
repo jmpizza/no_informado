@@ -11,6 +11,7 @@ import AdministrarRoles from "./renderer/components/auth/AdministrarRoles";
 import Cierre from "./renderer/components/pages/Ciere";
 import AlertParameter from "./renderer/components/pages/AlertParameter";
 import CloseHistory from "./renderer/components/pages/CloseHistory"
+import SaldosIniciales from "./renderer/components/pages/SaldosIniciales";
 
 function AppContent() {
     const [view, setView] = useState("dashboard");
@@ -34,6 +35,7 @@ function AppContent() {
                         {view === "cierre" && <Cierre />}
                         {view === "alertParameter" && <AlertParameter />}
                         {view === "closeHistory" && <CloseHistory/>}
+                        {view === "saldosIniciales" && <SaldosIniciales />}
                         
                     </div>
 

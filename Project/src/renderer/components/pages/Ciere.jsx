@@ -270,15 +270,15 @@ export default function Cierre({ lastClosure, onClosureConfirmed }) {
         <table className="w-full">
           <thead className="bg-gray-50 border-b">
             <tr>
-              <th className="px-6 py-3 text-left">Medio</th>
-              <th className="px-6 py-3 text-left">Esperado</th>
-              <th className="px-6 py-3 text-left">Contado</th>
-              <th className="px-6 py-3 text-left">Diferencia</th>
-              <th className="px-6 py-3 text-left">Observaciones</th>
+              <th className="px-6 py-3 text-left text-gray-600">Medio</th>
+              <th className="px-6 py-3 text-left text-gray-600">Esperado</th>
+              <th className="px-6 py-3 text-left text-gray-600">Contado</th>
+              <th className="px-6 py-3 text-left text-gray-600">Diferencia</th>
+              <th className="px-6 py-3 text-left text-gray-600">Observaciones</th>
             </tr>
           </thead>
 
-          <tbody className="divide-y">
+          <tbody className="divide-y text-gray-700">
             {paymentMethods.map(pm => {
               const Icon = pm.icon;
               const difference = calculateDifference(pm.expectedAmount, pm.countedAmount);
@@ -306,7 +306,7 @@ export default function Cierre({ lastClosure, onClosureConfirmed }) {
                       value={pm.countedAmount}
                       onChange={e => handleAmountChange(pm.id, e.target.value)}
                       placeholder="0"
-                      className="max-w-xs"
+                      className="max-w-xs text-gray-700"
                     />
                   </td>
 
@@ -421,7 +421,7 @@ export default function Cierre({ lastClosure, onClosureConfirmed }) {
                 </div>
 
                 <div className="pt-4 border-t">
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-3 gap-4 text-black">
                     <div>
                       <p className="text-gray-500 text-sm mb-1">Total esperado</p>
                       <p>$ {totals.totalExpected.toLocaleString('es-CO')}</p>
@@ -444,7 +444,7 @@ export default function Cierre({ lastClosure, onClosureConfirmed }) {
               {/* Detalle por medio */}
               <div>
                 <h3 className="mb-4 text-gray-900">Detalle por medio de pago</h3>
-                <div className="space-y-3">
+                <div className="space-y-3 text-black">
                   {paymentMethods.map(pm => {
                     const counted = parseFloat(pm.countedAmount) || 0;
                     const difference = counted - pm.expectedAmount;
