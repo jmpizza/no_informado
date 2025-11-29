@@ -274,7 +274,8 @@ alert(`Exportando ${filteredclousuresList.length} cierres en formato ${format.to
 setShowExportModal(false);
 };
 
-const handleExportClosure = (format) => {
+const handleExportClosure = async (format) => {
+  const exportopdf = await window.api.exportToPdf(selectedClosure.closureNumber)
 if (selectedClosure) {
 alert(`Exportando cierre #${selectedClosure.closureNumber} en formato ${format.toUpperCase()}`);
 setShowClosureExportModal(false);

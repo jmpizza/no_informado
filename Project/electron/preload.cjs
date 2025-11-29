@@ -57,6 +57,8 @@ try {
       ipcRenderer.invoke("alert:checkTimeInterval"),
     getUserInfo: () =>
       ipcRenderer.invoke("user:getUserInfo"),
+    exportToPdf: (closure) =>
+      ipcRenderer.invoke("export:exportToPdf", closure),
   });
 } catch (error) {
   console.error("Error en preload script:", error);
