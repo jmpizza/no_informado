@@ -43,10 +43,9 @@ export function setupAlertHandlers() {
     }
   })
 
-  ipcMain.handle("alert:getParameters", async (event, paramPayload) => {
+  ipcMain.handle("alert:getParameters", async (event) => {
     try {
-        const Parameters = await alertService.getNewParameters()
-        console.log(Parameters)
+        const Parameters = await alertService.getAlertParameters()
       return { success: true, parameters: Parameters };
     } catch (error) {
       return { success: false, error: error.message };

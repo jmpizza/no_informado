@@ -21,20 +21,16 @@ export default function AlertParameter({ parameters = {}, onSave = () => {} }) {
   const updateCurrentConfiguration = async () => {
     try {
     const params = await window.api.getParameters()
-    console.log(params)
-
-    formData.closureDifferenceThreshold = params[0].setting,
-    formData.minorDifferenceThreshold = params[1].setting,
-    formData.irregularAmountLimit = params[3].setting,
-    formData.anomalousMovementInterval = params[2].setting,
-    formData.maxAnomalousMovementsPerDay = params[4].setting
-    
+    setFormData(params.parameters)
     } catch (err) {
       console.error("Error al colocar los parametros:", err);
     }
   }
 
-  updateCurrentConfiguration()
+  useEffect(() => {
+    updateCurrentConfiguration()
+  }, []);
+
   
   const handleChange = (field, value) => {
     const numValue = parseFloat(value) || 0;

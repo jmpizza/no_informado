@@ -36,7 +36,6 @@ export default function Cierre({ lastClosure, onClosureConfirmed }) {
     }
   };
 
-    // Al montar el componente, cargamos los datos del cierre
   useEffect(() => {
     fetchClosingData();
   }, []);

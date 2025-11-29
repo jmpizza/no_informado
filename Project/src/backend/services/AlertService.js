@@ -103,7 +103,26 @@ export default class AlertService {
     const parameters = await this.AlertRepository.setParameters(parametersData)
     }
 
-    async getNewParameters(){
-        return await this.AlertRepository.getParameters()
-    }
+    async getAlertParameters() {
+        const parameters = await this.AlertRepository.getParameters();
+
+        if (!parameters || parameters.length === 0) {
+            throw new NotFoundException("No se encontraron parámetros de alertas");
+        }
+
+        // Transformar array → objeto estructurado
+        const formatted = parameters.reduce((acc, param) => {
+            acc[param.variable] = param.setting;
+            return acc;
+        }, {});
+
+        return {
+            closureDifferenceThreshold: formatted.closureDifferenceThreshold,
+            minorDifferenceThreshold: formatted.minorDifferenceThreshold,
+            irregularAmountLimit: formatted.irregularAmountLimit,
+            anomalousMovementInterval: formatted.anomalousMovementInterval,
+            maxAnomalousMovementsPerDay: formatted.maxAnomalousMovementsPerDay
+        };
+        }
+
 }
