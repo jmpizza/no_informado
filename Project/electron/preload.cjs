@@ -40,6 +40,8 @@ try {
       ipcRenderer.invoke("alert:generateMovementAlert", alertMovementData),
     setParameters: (alertData) =>
       ipcRenderer.invoke("alert:setParameters", alertData),
+    getParameters: () =>
+      ipcRenderer.invoke("alert:getParameters"),
     getClosures: () => 
       ipcRenderer.invoke("closing:getAllClosures"),
     calculateDifference: (expected, counted) =>

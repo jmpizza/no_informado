@@ -43,6 +43,16 @@ export function setupAlertHandlers() {
     }
   })
 
+  ipcMain.handle("alert:getParameters", async (event, paramPayload) => {
+    try {
+        const Parameters = await alertService.getNewParameters()
+        console.log(Parameters)
+      return { success: true, parameters: Parameters };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  })
+
   ipcMain.handle("alert:checkIrregularMovement", async (event, alertMovementData) => {
     try {
       const isIrregular = await alertService.checkIrregularMovement(alertMovementData.ammount);

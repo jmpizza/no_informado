@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Settings, Save, CheckCircle, X, AlertCircle } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 
 export default function AlertParameter({ parameters = {}, onSave = () => {} }) {
+
   const defaultValues = {
     closureDifferenceThreshold: 15000,
     minorDifferenceThreshold: 0,
@@ -12,11 +13,29 @@ export default function AlertParameter({ parameters = {}, onSave = () => {} }) {
     anomalousMovementInterval: 5,
     maxAnomalousMovementsPerDay: 10,
   };
-
+  
   const [formData, setFormData] = useState({ ...defaultValues, ...parameters });
   const [success, setSuccess] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
+  const updateCurrentConfiguration = async () => {
+    try {
+    const params = await window.api.getParameters()
+    console.log(params)
+
+    formData.closureDifferenceThreshold = params[0].setting,
+    formData.minorDifferenceThreshold = params[1].setting,
+    formData.irregularAmountLimit = params[3].setting,
+    formData.anomalousMovementInterval = params[2].setting,
+    formData.maxAnomalousMovementsPerDay = params[4].setting
+    
+    } catch (err) {
+      console.error("Error al colocar los parametros:", err);
+    }
+  }
+
+  updateCurrentConfiguration()
+  
   const handleChange = (field, value) => {
     const numValue = parseFloat(value) || 0;
     setFormData(prev => ({ ...prev, [field]: numValue }));
@@ -31,6 +50,7 @@ export default function AlertParameter({ parameters = {}, onSave = () => {} }) {
   const handleConfirmSave = async () => {
     
     const response = await window.api.setParameters(formData)
+    const respons = (await window.api.getParameters()).Parameters
 
     onSave(formData);
     setSuccess(true);

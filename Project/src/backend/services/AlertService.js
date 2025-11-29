@@ -102,4 +102,8 @@ export default class AlertService {
     async setNewParameters(parametersData){
     const parameters = await this.AlertRepository.setParameters(parametersData)
     }
+
+    async getNewParameters(){
+        return await this.AlertRepository.getParameters()
+    }
 }
