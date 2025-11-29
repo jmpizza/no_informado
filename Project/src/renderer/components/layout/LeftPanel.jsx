@@ -17,7 +17,7 @@ import {
 export default function LeftPanel({ setView }) {
     const { logout } = useAuth();
 
-    const role = "cajero";
+    const role = "admin";
 
     const menuItems = [
         { title: "Inicio", icon: Home, view: "home", children: null, roles: ["admin", "cajero", "usuario"] },
@@ -40,7 +40,7 @@ export default function LeftPanel({ setView }) {
             roles: ["admin"],
             children: [
                 { title: "Registrar usuario", view: "registrarUsuario", roles: ["admin"] },
-                { title: "Administrar permisos", view: null, roles: ["admin"] },
+                { title: "Administrar permisos", view: "administrarPermisos", roles: ["admin"] },
                 { title: "Administrar roles", view: "administrarRoles", roles: ["admin"] }
             ] 
         },
