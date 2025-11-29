@@ -113,22 +113,21 @@ export default function Cierre({ lastClosure, onClosureConfirmed }) {
   };
 
   const getStatusColor = (difference) => {
-  // fallback para evitar undefined
-  const safeParams = {
-    closureDifferenceThreshold: parametersDetails?.closureDifferenceThreshold ?? 15000,
-    minorDifferenceThreshold: parametersDetails?.minorDifferenceThreshold ?? 5000,
+    const safeParams = {
+      closureDifferenceThreshold: parametersDetails?.closureDifferenceThreshold ?? 15000,
+      minorDifferenceThreshold: parametersDetails?.minorDifferenceThreshold ?? 5000,
+    };
+
+    if (difference <= -(safeParams.closureDifferenceThreshold)) {
+      return { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' };
+    }
+
+    if (difference <= -(safeParams.minorDifferenceThreshold)) {
+      return { bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200' };
+    }
+
+    return { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' };
   };
-
-  if (difference <= -(safeParams.closureDifferenceThreshold)) {
-    return { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' };
-  }
-
-  if (difference <= -(safeParams.minorDifferenceThreshold)) {
-    return { bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200' };
-  }
-
-  return { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' };
-};
 
 
   const calculateTotals = () => {

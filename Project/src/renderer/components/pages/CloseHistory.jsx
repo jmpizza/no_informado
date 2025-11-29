@@ -21,10 +21,25 @@ const [dateFilter, setDateFilter] = useState('all');
 const [sortBy, setSortBy] = useState('date-desc');
 const [showExportModal, setShowExportModal] = useState(false);
 const [showClosureExportModal, setShowClosureExportModal] = useState(false);
+const [parametersDetails, setParameters] = useState(null);
+
 
 useEffect(() => {
 }, [selectedClosure]);
 
+const fectParameters = async () => {
+    try {
+      const response = await window.api.getParameters();
+      if (!response.success) throw new Error(response.error);
+      setParameters(response.parameters);
+    } catch (err) {
+      console.error("Error al obtener parámetros:", err);
+    }
+  };
+
+  useEffect(() => {
+    fectParameters();
+  }, []);
 
 const exportAllClousuresList =  async () => {
   try {
@@ -68,9 +83,20 @@ useEffect(() => {
 
 
 const getStatusColor = (difference) => {
-if (difference <= -15000) return { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' };
-if (difference < 0) return { bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200' };
-return { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' };
+  const safeParams = {
+    closureDifferenceThreshold: parametersDetails?.closureDifferenceThreshold ?? 15000,
+    minorDifferenceThreshold: parametersDetails?.minorDifferenceThreshold ?? 5000,
+  };
+
+  if (difference <= -(safeParams.closureDifferenceThreshold)) {
+    return { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' };
+  }
+
+  if (difference <= -(safeParams.minorDifferenceThreshold)) {
+    return { bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200' };
+  }
+
+  return { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' };
 };
 
 const getStatusText = (difference) => {
@@ -79,10 +105,16 @@ return difference > 0 ? 'Sobrante' : 'Faltante';
 };
 
 const getStatusBadgeColor = (difference) => {
-if (difference <= -15000) return 'bg-red-500';
-if (difference < 0) return 'bg-yellow-500';
-if (difference === 0) return 'bg-green-500';
-return 'bg-green-500';
+
+  const safeParams = {
+    closureDifferenceThreshold: parametersDetails?.closureDifferenceThreshold ?? 15000,
+    minorDifferenceThreshold: parametersDetails?.minorDifferenceThreshold ?? 5000,
+  };
+
+  if (difference <= -(safeParams.closureDifferenceThreshold)) return 'bg-red-500';
+  if (difference < safeParams.minorDifferenceThreshold) return 'bg-yellow-500';
+  if (difference === 0) return 'bg-green-500';
+  return 'bg-green-500';
 };
 
 // Constante para capturar la fecha de inicio y fin separadas por un guion
