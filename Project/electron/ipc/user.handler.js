@@ -39,4 +39,12 @@ export function setupUserHandlers() {
     }
   });
 
+    ipcMain.handle("user:update", async (event, data) => {
+    try{
+      const user = await userService.update(data);
+      return { success: true, user };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  })
 }

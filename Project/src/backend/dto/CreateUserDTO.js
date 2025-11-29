@@ -21,6 +21,10 @@ export default class CreateUserDTO {
       errors.push("Nombre es requerido");
     }
 
+    if (!this.last_name || this.last_name.length === 0) {
+      errors.push("Apellido es requerido");
+    }
+
     if (!this.email || !this.email.includes("@")) {
       errors.push("Email invalido");
     }

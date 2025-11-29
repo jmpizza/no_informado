@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import CreateUserDTO from "../dto/CreateUserDTO.js";
+import UpdateUserDTO from "../dto/UpdateUserDTO.js";
 import { ValidationException } from "../exceptions/ValidationException.js";
 import { NotFoundException } from "../exceptions/NotFoundException.js";
 
@@ -57,4 +58,19 @@ export default class UserService {
     };
   }
 
+  async update(data) {
+    const dto = new UpdateUserDTO(data);
+    dto.validate(); 
+
+    const id = dto.id;
+
+    const userData = {
+      name: dto.name,
+      last_name: dto.last_name,
+      email: dto.email,
+      status: dto.status,
+      rol_id: dto.rol_id,
+    }
+    return await this.userRepository.update(id, userData);
+  }
 }
