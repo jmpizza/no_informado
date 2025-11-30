@@ -23,7 +23,6 @@ export function setupAuthHandlers() {
 
       await logsService.log(
         'user_login',
-        user.id,
         `Usuario ${user.name} ${user.last_name} inició sesión exitosamente`
       );
 
@@ -32,7 +31,6 @@ export function setupAuthHandlers() {
 
       await logsService.log(
         'user_login_failed',
-        data.id,
         `Intento de login fallido: ${error.message}`
       );
 
@@ -46,10 +44,16 @@ export function setupAuthHandlers() {
 
       clearAuthenticatedUser();
 
-      await logsService.log('user_logout', null, 'Usuario cerró sesión');
+      await logsService.log('user_logout', 'Usuario cerró sesión');
 
       return { success: true };
     } catch (error) {
+
+      await logsService.log(
+        'user_logout_failed',
+        `Intento de logout fallido: ${error.message}`
+      );
+      
       return { success: false, error: error.message };
     }
   });

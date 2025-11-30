@@ -10,6 +10,8 @@ import ClosingService from "../../src/backend/services/ClosingServiceC.js";
 import ClosingRepository from "../../src/backend/repositories/ClosingRepository.js";
 import { getAuthenticatedUser } from "../../src/backend/utils/SessionContext.js";
 import PaymentMethodService from "../../src/backend/services/PaymentMethodService.js";
+import LogsService from "../../src/backend/services/LogsService.js";
+import LogsRepository from "../../src/backend/repositories/LogsRepository.js";
 
 export function setupAlertHandlers() {
   const db = DatabaseSingle.getInstance().prisma;
@@ -18,6 +20,9 @@ export function setupAlertHandlers() {
   const alertRepository = new AlertRepository(db)
   const closingRepository = new ClosingRepository(db);
   const paymentMethodRepository = new PaymentMethodRepository(db);
+
+  const logsRepository = new LogsRepository(db);
+  const logsService = new LogsService(logsRepository);
 
   const alertService = new AlertService(alertRepository)
   const paymentMethodService = new PaymentMethodService(paymentMethodRepository);
@@ -37,8 +42,20 @@ export function setupAlertHandlers() {
   ipcMain.handle("alert:setParameters", async (event, paramPayload) => {
     try {
         const Parameters = await alertService.setNewParameters(paramPayload)
+
+      await logsService.log(
+        'alert_parameters_set',
+        `Se establecieron nuevos parámetros de alerta: ${JSON.stringify(paramPayload)}`
+      );
+
       return { success: true };
     } catch (error) {
+
+      await logsService.log(
+        'alert_parameters_set_failed',
+        `Error al establecer parámetros de alerta: ${error.message}`
+      );
+
       return { success: false, error: error.message };
     }
   })
@@ -46,8 +63,20 @@ export function setupAlertHandlers() {
   ipcMain.handle("alert:getParameters", async (event) => {
     try {
         const Parameters = await alertService.getAlertParameters()
+
+      await logsService.log(
+        'alert_parameters_get',
+        `Se obtuvieron los parámetros de alerta: ${JSON.stringify(Parameters)}`
+      );
+
       return { success: true, parameters: Parameters };
     } catch (error) {
+
+      await logsService.log(
+        'alert_parameters_get_failed',
+        `Error al obtener parámetros de alerta: ${error.message}`
+      );
+
       return { success: false, error: error.message };
     }
   })
@@ -67,9 +96,20 @@ export function setupAlertHandlers() {
         alertMovementData.closing_id
       );
 
+      await logsService.log(
+        'alert_irregular_movement',
+        `Se generó una alerta por movimiento irregular: ${JSON.stringify(alert)}`
+      );
+
       return { success: true, data: alert };
 
     } catch (error) {
+
+      await logsService.log(
+        'alert_irregular_movement_failed',
+        `Error al generar alerta por movimiento irregular: ${error.message}`
+      );
+      
       console.log("ERROR en alert:generateMovementAlert:", error);
       return { success: false, error: error.message };
     }
@@ -84,11 +124,22 @@ export function setupAlertHandlers() {
       if (await alertService.checkTimeInterval(time)){
         const user = getAuthenticatedUser()
         const alert = await alertService.createAlertTime(user)
+
+        await logsService.log(
+          'alert_time_interval',
+          `Se generó una alerta por intervalo de tiempo: ${JSON.stringify(alert)}`
+        );
       }
     
       return { success: true };
 
     } catch (error) {
+
+      await logsService.log(
+        'alert_time_interval_failed',
+        `Error al generar alerta por intervalo de tiempo: ${error.message}`
+      );
+
       console.log("ERROR en alert:checkTimeInterval", error);
       return { success: false, error: error.message };
     }
@@ -97,10 +148,21 @@ export function setupAlertHandlers() {
   ipcMain.handle("alert:getAllAlerts", async (event) => {
     try {
       const alerts = await alertService.getAllAlerts()
+
+      await logsService.log(
+        'alert_get_all',
+        `Se obtuvieron todas las alertas: ${JSON.stringify(alerts)}`
+      );
     
       return { success: true, data:alerts };
 
     } catch (error) {
+
+      await logsService.log(
+        'alert_get_all_failed',
+        `Error al obtener todas las alertas: ${error.message}`
+      );
+
       console.log("ERROR en alert:checkTimeInterval", error);
       return { success: false, error: error.message };
     }
@@ -134,9 +196,20 @@ export function setupAlertHandlers() {
         lastClosing.id
       );
 
+      await logsService.log(
+        'alert_closing_threshold',
+        `Se generó una alerta por cierre que pasa el umbral: ${JSON.stringify(alert)}`
+      );
+
       return { success: true, data: alert };
 
     } catch (error) {
+
+      await logsService.log(
+        'alert_closing_threshold_failed',
+        `Error al generar alerta por cierre que pasa el umbral: ${error.message}`
+      );
+      
       console.error("Error en alert:checkClosing:", error);
       return { success: false, error: error.message };
     }
