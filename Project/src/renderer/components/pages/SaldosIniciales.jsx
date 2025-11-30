@@ -1,22 +1,74 @@
-import { useState } from 'react';
-import { DollarSign, CreditCard, Smartphone, Wallet, CheckCircle, AlertCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { DollarSign, CreditCard, Smartphone, Wallet, Lock, CheckCircle, AlertCircle, X, Info } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
+import { ICON_MAP } from '../../../constants/iconMap.js';
+
 
 export default function SaldosIniciales() {
-  const [paymentMethods, setPaymentMethods] = useState([
-    { id: 'cash', name: 'Efectivo', icon: DollarSign, expectedAmount: 50000, initialAmount: '' },
-    { id: 'transfer', name: 'Transferencia', icon: CreditCard, expectedAmount: 0, initialAmount: '' },
-    { id: 'dataphone', name: 'Datáfono', icon: CreditCard, expectedAmount: 0, initialAmount: '' },
-    { id: 'digital-wallet', name: 'Billetera digital', icon: Smartphone, expectedAmount: 0, initialAmount: '' },
-    { id: 'others', name: 'Otros', icon: Wallet, expectedAmount: 0, initialAmount: '' },
-  ]);
-
+  const [paymentMethods, setPaymentMethods] = useState([]);
   const [errors, setErrors] = useState({});
   const [showWarning, setShowWarning] = useState(false);
   const [hasWarningBeenShown, setHasWarningBeenShown] = useState(false);
   const [success, setSuccess] = useState(false);
   const [savedData, setSavedData] = useState(null);
+  const [currentUserInfo, setCurrentUserInfo] = useState(null);
+  const [toasts, setToasts] = useState([]);
+
+
+  const showToast = (type, message) => {
+        const id = Date.now();
+
+        setToasts(prev => {
+            if (prev.some(t => t.message === message)) return prev;
+            return [...prev, { id, type, message }];
+        });
+
+        setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
+  };
+
+  const removeToast = (id) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  };
+
+
+  const fetchInitialBalances = async () => {
+    try {
+      const initialBalances = await window.api.getInitialBalancesByPaymentMethods();
+
+      if (!initialBalances.success) throw new Error(initialBalances.error);
+
+      const formatted = initialBalances.data.map(pm => ({
+        id: pm.id, 
+        icon: ICON_MAP[pm.name] ?? Info, 
+        name: pm.name,
+        expectedAmount: pm.countedAmount,
+        initialAmount: "",
+      }));
+
+      setPaymentMethods(formatted);
+    } catch (error) {
+      console.error("Error fetching initial balances:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchInitialBalances();
+  }, []);
+
+  const fetchUserInfo = async () => {
+    try {
+      const response = await window.api.getUserInfo();
+      if (!response.success) throw new Error(response.error);
+      setCurrentUserInfo(response.data);
+    } catch (err) {
+      console.error("Error al obtener información del usuario:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserInfo();
+  }, []);
 
   const handleAmountChange = (id, value) => {
     if (value === '' || /^\d*\.?\d*$/.test(value)) {
@@ -62,48 +114,73 @@ export default function SaldosIniciales() {
     }, 0);
   };
 
-  const handleConfirm = () => {
-    const validationErrors = validateAmounts();
+  const handleConfirm = async () => {
+  const validationErrors = validateAmounts();
 
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
+  if (Object.keys(validationErrors).length > 0) {
+    setErrors(validationErrors);
+    return;
+  }
 
-    setErrors({});
+  setErrors({});
 
-    const hasDiscrepancies = checkDiscrepancies();
+  const hasDiscrepancies = checkDiscrepancies();
 
-    if (hasDiscrepancies && !hasWarningBeenShown) {
-      setShowWarning(true);
-      setHasWarningBeenShown(true);
-      return;
-    }
+  if (hasDiscrepancies && !hasWarningBeenShown) {
+    setShowWarning(true);
+    setHasWarningBeenShown(true);
+    return;
+  }
 
-    const now = new Date();
-    const formattedDate =
-      now.toLocaleDateString('es-ES', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric',
-      }) +
-      ', ' +
-      now.toLocaleTimeString('es-ES', {
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-
-    setSavedData({
-      date: formattedDate,
-      user: 'Juan Pérez (Cajero)',
-      totals: [...paymentMethods],
+  const now = new Date();
+  const formattedDate =
+    now.toLocaleDateString("es-ES", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    }) +
+    ", " +
+    now.toLocaleTimeString("es-ES", {
+      hour: "2-digit",
+      minute: "2-digit",
     });
 
-    setSuccess(true);
-    setShowWarning(false);
+  setSavedData({
+    date: formattedDate,
+    user: currentUserInfo
+      ? `${currentUserInfo.name} ${currentUserInfo.lastName} (${currentUserInfo.rol.name})`
+      : "Cargando usuario...",
+    totals: [...paymentMethods],
+  });
 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  for (const pm of paymentMethods) {
+    const amount = Number(pm.initialAmount) || 0;
+
+    if (amount === 0) continue;
+
+    const userIdResponse = await window.api.getAuthenticatedUser();
+
+    const movementData = {
+      ammount: amount,
+      type: true,
+      user_id: userIdResponse.userId,
+      payment_method_id: pm.id, 
+    };
+
+    const response = await window.api.createMovement(movementData);
+
+    if (!response.success) {
+      showToast("error", "Error al registrar movimiento: " + response.error);
+      return; 
+    }
+  }
+
+  setSuccess(true);
+  setShowWarning(false);
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
@@ -241,6 +318,24 @@ export default function SaldosIniciales() {
           </div>
         </div>
       )}
+      <div className="fixed top-5 right-5 flex flex-col gap-2 z-50">
+                {toasts.map(t => (
+                    <div
+                        key={t.id}
+                        className={`flex justify-between items-center p-3 shadow-lg max-w-xs w-full
+                                    ${t.type === "success" ? "bg-green-500" : "bg-red-500"} 
+                                    text-white rounded-2xl`}
+                    >
+                        <span className="mr-2">{t.message}</span>
+                        <button 
+                            onClick={() => removeToast(t.id)} 
+                            className="p-1 rounded-full hover:bg-red-500/20 flex items-center justify-center"
+                        >
+                            <X size={14} strokeWidth={2} className="text-white" />
+                        </button>
+                    </div>
+                ))}
+            </div>
     </div>
   );
 }

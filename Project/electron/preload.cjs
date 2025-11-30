@@ -51,10 +51,10 @@ try {
       ipcRenderer.invoke("alert:checkIrregularMovement", movementData),
     checkClosing: (movementData) =>
       ipcRenderer.invoke("alert:checkClosing", movementData),
-    checkTimeInterval: () => ipcRenderer.invoke("alert:checkTimeInterval"),
-    
-    
-    getClosures: () => ipcRenderer.invoke("closing:getAllClosures"),
+    checkTimeInterval: () => 
+      ipcRenderer.invoke("alert:checkTimeInterval"),
+    getClosures: () => 
+      ipcRenderer.invoke("closing:getAllClosures"),
     calculateDifference: (expected, counted) =>
       ipcRenderer.invoke("closing:calculateDifference", {
         expected: Number(expected),
@@ -62,9 +62,14 @@ try {
       }),
     getClosureDetails: (closing_id) =>
       ipcRenderer.invoke("closing:getClosureDetails", closing_id),
-
-    exportToPdf: (closure) => ipcRenderer.invoke("export:exportToPdf", closure),
-    exportAllClosings: (closure) => ipcRenderer.invoke("export:exportAllClosings", closure),
+    exportToPdf: (closure) => 
+      ipcRenderer.invoke("export:exportToPdf", closure),
+    exportAllClosings: (closure) => 
+      ipcRenderer.invoke("export:exportAllClosings", closure),
+    getInitialBalancesByPaymentMethods: () => 
+      ipcRenderer.invoke("movement:getInitialBalancesByPaymentMethods"),
+    getAuthenticatedUser: () => 
+      ipcRenderer.invoke("user:getId"),
   });
 } catch (error) {
   console.error("Error en preload script:", error);

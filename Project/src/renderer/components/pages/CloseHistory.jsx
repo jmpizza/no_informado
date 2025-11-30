@@ -22,6 +22,24 @@ const [sortBy, setSortBy] = useState('date-desc');
 const [showExportModal, setShowExportModal] = useState(false);
 const [showClosureExportModal, setShowClosureExportModal] = useState(false);
 const [parametersDetails, setParameters] = useState(null);
+const [toasts, setToasts] = useState([]);
+
+
+const showToast = (type, message) => {
+        const id = Date.now();
+
+        setToasts(prev => {
+            if (prev.some(t => t.message === message)) return prev;
+            return [...prev, { id, type, message }];
+        });
+
+        setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
+    };
+
+
+const removeToast = (id) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+};
 
 
 useEffect(() => {
@@ -273,14 +291,14 @@ const handleExportAll = async (format) => {
     const response = await window.api.getClosures();
     const exportAll = await window.api.exportAllClosings(response)
 
-alert(`Exportando ${filteredclousuresList.length} cierres en formato ${format.toUpperCase()}`);
+showToast("success", `Exportando ${filteredclousuresList.length} cierres en formato ${format.toUpperCase()}`);
 setShowExportModal(false);
 };
 
 const handleExportClosure = async (format) => {
   const exportopdf = await window.api.exportToPdf(selectedClosure.closureNumber)
 if (selectedClosure) {
-alert(`Exportando cierre #${selectedClosure.closureNumber} en formato ${format.toUpperCase()}`);
+showToast("success", `Exportando cierre #${selectedClosure.closureNumber} en formato ${format.toUpperCase()}`);
 setShowClosureExportModal(false);
 }
 };
@@ -669,6 +687,24 @@ return ( <div className="p-8 flex flex-col min-h-screen bg-gray-100">
           </div>
         </div>
       )}
+      <div className="fixed top-5 right-5 flex flex-col gap-2 z-50">
+                {toasts.map(t => (
+                    <div
+                        key={t.id}
+                        className={`flex justify-between items-center p-3 shadow-lg max-w-xs w-full
+                                    ${t.type === "success" ? "bg-green-500" : "bg-red-500"} 
+                                    text-white rounded-2xl`}
+                    >
+                        <span className="mr-2">{t.message}</span>
+                        <button 
+                            onClick={() => removeToast(t.id)} 
+                            className="p-1 rounded-full hover:bg-red-500/20 flex items-center justify-center"
+                        >
+                            <X size={14} strokeWidth={2} className="text-white" />
+                        </button>
+                    </div>
+                ))}
+            </div>
     </div>
   );
 }

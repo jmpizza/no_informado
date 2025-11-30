@@ -141,6 +141,7 @@ async getClosureWithDetails(id) {
 
     paymentMethods: closure.closing_details.map((d) => ({
       id: d.id,
+      paymentMethodId: d.payment_method.id,
       name: d.payment_method.name,
       expectedAmount: d.expected_balance,
       countedAmount: d.counted,
@@ -149,5 +150,23 @@ async getClosureWithDetails(id) {
     }))
   };
 }
+
+async getInitialBalancesByPaymentMethods() {
+    const lastClosure = await this.getLastClosing();
+
+    if (!lastClosure) {
+      throw new NotFoundException("No hay cierres registrados para calcular el balance inicial");
+    }
+
+    const lastClosureDetails = await this.getClosureWithDetails(lastClosure.id);
+
+
+    return lastClosureDetails.paymentMethods.map(pm => ({
+      id: pm.paymentMethodId,
+      name: pm.name,
+      expectedAmount: pm.expectedAmount,
+      countedAmount: pm.countedAmount
+    }));
+  }
 
 }  

@@ -112,7 +112,8 @@ export default class ClosingRepository {
             difference: true,
             payment_method: {
               select: {
-                name: true
+                name: true,
+                id: true,
               }
             }
           }

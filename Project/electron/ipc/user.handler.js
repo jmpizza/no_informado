@@ -46,5 +46,14 @@ export function setupUserHandlers() {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  })
+  });
+
+  ipcMain.handle("user:getId", async (event) => {
+    try {
+      const userId = getAuthenticatedUser();
+      return { success: true, userId };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  });
 }

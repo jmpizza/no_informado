@@ -6,6 +6,8 @@ import UserRepository from "../../src/backend/repositories/UserRepository.js";
 import PaymentMethodRepository from "../../src/backend/repositories/PaymentMethodRepository.js";
 import AlertRepository from "../../src/backend/repositories/AlertRepository.js";
 import AlertService from "../../src/backend/services/AlertService.js";
+import ClosingService from "../../src/backend/services/ClosingServiceC.js";
+import ClosingRepository from "../../src/backend/repositories/ClosingRepository.js";
 
 
 
@@ -17,10 +19,21 @@ export function setupMovementHandlers() {
 
   const alertService = new AlertService(alertRepository)
   const paymentMethodRepository = new PaymentMethodRepository(db);
+  const closingRepository = new ClosingRepository(db);
+  const closingService = new ClosingService(
+    closingRepository,
+    userRepository,
+    paymentMethodRepository,
+    movementRepository,
+    paymentMethodRepository
+  );
+
   const movementService = new MovementService(
     movementRepository,
     userRepository,
-    paymentMethodRepository
+    paymentMethodRepository,
+    closingService,
+    closingRepository
   );
   
 
@@ -96,6 +109,14 @@ export function setupMovementHandlers() {
     try {
       const total = await movementService.getTotalByUser(user_id, type);
       return { success: true, data: total };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  });
+  ipcMain.handle("movement:getInitialBalancesByPaymentMethods", async (event) => {
+    try {
+      const balances = await closingService.getInitialBalancesByPaymentMethods();
+      return { success: true, data: balances };
     } catch (error) {
       return { success: false, error: error.message };
     }

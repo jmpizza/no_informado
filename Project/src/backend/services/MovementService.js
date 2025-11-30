@@ -3,11 +3,14 @@ import { ValidationException } from "../exceptions/ValidationException.js";
 import { NotFoundException } from "../exceptions/NotFoundException.js";
 
 export default class MovementService {
-  constructor(movementRepository, userRepository, paymentMethodRepository) {
+  constructor(movementRepository, userRepository, paymentMethodRepository, closingService, closingRepository) {
     this.movementRepository = movementRepository;
     this.userRepository = userRepository;
     this.paymentMethodRepository = paymentMethodRepository;
+    this.closingService = closingService;
+    this.closingRepository = closingRepository;
   }
+
 
   async createMovement(ammount, type, user_id, payment_method_id, closing_id = null) {
     const dto = new CreateMovementDTO(ammount, type, user_id, payment_method_id, closing_id);

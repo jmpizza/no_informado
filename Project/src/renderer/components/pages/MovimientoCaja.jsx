@@ -14,6 +14,7 @@ export default function MovimientoCaja() {
     const [saldoActual, setSaldoActual] = useState(0);
     const [saldoDespues, setSaldoDespues] = useState(0);
     const [toasts, setToasts] = useState([]);
+    const [saldosPorMetodo, setSaldosPorMetodo] = useState([]);
 
 
     const opciones = [
@@ -23,8 +24,46 @@ export default function MovimientoCaja() {
 
     useEffect(() => {
         fetchMetodosPago();
-        fetchSaldoActual();
+        fetchSaldosPorMetodo();
     }, []);
+
+    useEffect(() => {
+        if (!metodoPago) {
+            setSaldoActual(0);
+            setSaldoDespues(0);
+            return;
+        }
+
+        const metodo = saldosPorMetodo.find(m => m.name === metodoPago);
+
+        if (metodo) {
+            setSaldoActual(metodo.balance);
+            setSaldoDespues(metodo.balance);
+        }
+
+    }, [metodoPago, saldosPorMetodo]);
+
+
+    const fetchSaldosPorMetodo = async () => {
+        try {
+            const response = await window.api.fetchClosingData(true);
+
+            if (response.success) {
+                const formattedBalances = response.data.map(item => ({
+                    payment_method_id: item.payment_method_id,
+                    name: item.name,
+                    balance: item.balance
+                }));
+                setSaldosPorMetodo(formattedBalances);  
+            } else {
+                showToast("error", "Error cargando saldos: " + response.error);
+            }
+        } catch (err) {
+            console.error(err);
+            showToast("error", "Error cargando saldos iniciales");
+        }
+    };
+
 
     const showToast = (type, message) => {
         const id = Date.now();
@@ -91,16 +130,16 @@ export default function MovimientoCaja() {
     };
 
     useEffect(() => {
+        const base = saldoActual;
         const valor = Number(monto) || 0;
 
         if (selected === "ingreso") {
-            setSaldoDespues(saldoActual + valor);
+            setSaldoDespues(base + valor);
         } else if (selected === "egreso") {
-            setSaldoDespues(saldoActual - valor);
-        } else {
-            setSaldoDespues(saldoActual);
+            setSaldoDespues(base - valor);
         }
     }, [monto, selected, saldoActual]);
+
 
     const handleSubmit = async () => {
         if (!selected) {
@@ -148,7 +187,7 @@ export default function MovimientoCaja() {
                 setMonto("");
                 setDesc("");
                 setMetodoPago("");
-                await fetchSaldoActual();
+                await fetchSaldosPorMetodo();
             } else {
                 showToast("error", "Error al registrar movimiento: " + response.error);
             }
@@ -271,11 +310,11 @@ export default function MovimientoCaja() {
                             </div>
 
                             <span className="text-gray-500 items-center p-1 font-semibold w-full flex">
-                                Saldo actual: {saldoActual.toLocaleString()}
+                                Saldo actual: {(saldoActual ?? 0).toLocaleString()}
                             </span>
 
                             <span className="col-start-2 flex items-center p-1 font-semibold text-green-700 text-sm">
-                                Saldo después del movimiento: {saldoDespues.toLocaleString()}
+                                Saldo después del movimiento: {(saldoDespues ?? 0).toLocaleString()}
                             </span>
 
                             <span className="col-start-2 flex items-center p-1 text-gray-700 text-sm">
