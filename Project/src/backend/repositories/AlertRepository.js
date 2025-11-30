@@ -78,4 +78,19 @@ export default class AlertRepository {
   async getAlerts(){
     return this.db.alert.findMany()
   }
+
+  async getAllAlerts() {
+    const alerts = await this.db.alert.findMany({
+      orderBy: { created_at: "desc" },
+
+      include: {
+        user: true,        
+        movement: true,    
+        closing: true      
+      }
+    });
+
+    return alerts;
+  }
+
 }

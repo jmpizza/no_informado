@@ -8,47 +8,7 @@ import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Label } from '../ui/label';
 
-// Simulación de fetch desde Prisma (placeholder)
-async function fetchAlertsFromPrisma() {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve([
-        {
-          id: '1',
-          type: 'closure',
-          severity: 'critical',
-          title: 'Diferencia en cierre',
-          description: 'Se detectó una diferencia de $20.000 en el cierre de caja.',
-          amount: 20000,
-          date: new Date().toISOString(),
-          operator: 'Juan Pérez',
-          relatedId: 'CLOSURE-001',
-        },
-        {
-          id: '2',
-          type: 'movement',
-          severity: 'warning',
-          title: 'Movimiento inusual',
-          description: 'Se registró un movimiento inusual de alto valor.',
-          amount: 150000,
-          date: new Date(Date.now() - 86400000).toISOString(),
-          operator: 'María Gómez',
-          relatedId: 'MOV-998',
-        },
-        {
-          id: '3',
-          type: 'info',
-          severity: 'info',
-          title: 'Notificación informativa',
-          description: 'Movimiento normal registrado correctamente.',
-          date: new Date(Date.now() - 2 * 86400000).toISOString(),
-          operator: 'Carlos Ruiz',
-          relatedId: 'MOV-120',
-        },
-      ]);
-    }, 600);
-  });
-}
+
 
 export default function AlertHistory() {
   const [alerts, setAlerts] = useState([]);
@@ -57,17 +17,36 @@ export default function AlertHistory() {
   const [dateFilter, setDateFilter] = useState('all');
   const [sortBy, setSortBy] = useState('date-desc');
   const [showExportModal, setShowExportModal] = useState(false);
+  const [toasts, setToasts] = useState([]);
+
+  const showToast = (type, message) => {
+        const id = Date.now();
+
+        setToasts(prev => {
+            if (prev.some(t => t.message === message)) return prev;
+            return [...prev, { id, type, message }];
+        });
+
+        setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
+    };
+
+
+const removeToast = (id) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+};
 
   useEffect(() => {
-    async function loadAlerts() {
-      const alerts = (await window.api.getAllAlerts()).data
-
-      setLoading(true);
-      setAlerts(alerts);
-      setLoading(false);
-    }
-    loadAlerts();
+    fetchAlerts();
   }, []);
+
+
+  const fetchAlerts = async () => {
+    setLoading(true); 
+    const response = await window.api.getAllAlerts();
+
+    setAlerts(response.data);
+    setLoading(false); 
+  } 
 
   const getSeverityColor = (severity) => {
     switch (severity) {
@@ -131,7 +110,7 @@ export default function AlertHistory() {
   const filteredAlerts = filterAndSortAlerts();
 
   const handleExport = (format) => {
-    alert(`Exportando ${filteredAlerts.length} alertas en formato ${format.toUpperCase()}`);
+    showToast("success", `Exportando ${filteredAlerts.length} alertas en formato ${format.toUpperCase()}`);
     setShowExportModal(false);
   };
 
@@ -226,7 +205,9 @@ export default function AlertHistory() {
                     <div className="grid grid-cols-3 gap-4 text-sm">
                       <div>
                         <p className="text-gray-500">Fecha</p>
-                        <p className="text-gray-900">{alert.date}</p>
+                        <p className="text-gray-900">
+                          {alert.date ? new Date(alert.date).toLocaleString('es-CO') : '-'}
+                        </p>
                       </div>
 
                       <div>
@@ -237,7 +218,10 @@ export default function AlertHistory() {
                       {alert.amount !== undefined && (
                         <div>
                           <p className="text-gray-500">Monto</p>
-                          <p className={colors.text}>$ {alert.amount.toLocaleString('es-CO')}</p>
+                          <p className={colors.text}>
+                            $ {alert.amount != null ? alert.amount.toLocaleString('es-CO') : '-'}
+                          </p>
+
                         </div>
                       )}
                     </div>
@@ -282,6 +266,24 @@ export default function AlertHistory() {
           </div>
         </div>
       )}
+      <div className="fixed top-5 right-5 flex flex-col gap-2 z-50">
+                {toasts.map(t => (
+                    <div
+                        key={t.id}
+                        className={`flex justify-between items-center p-3 shadow-lg max-w-xs w-full
+                                    ${t.type === "success" ? "bg-green-500" : "bg-red-500"} 
+                                    text-white rounded-2xl`}
+                    >
+                        <span className="mr-2">{t.message}</span>
+                        <button 
+                            onClick={() => removeToast(t.id)} 
+                            className="p-1 rounded-full hover:bg-red-500/20 flex items-center justify-center"
+                        >
+                            <X size={14} strokeWidth={2} className="text-white" />
+                        </button>
+                    </div>
+                ))}
+            </div>
     </div>
   );
 }

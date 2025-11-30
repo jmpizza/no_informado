@@ -124,9 +124,58 @@ export default class AlertService {
             maxAnomalousMovementsPerDay: formatted.maxAnomalousMovementsPerDay
         };
         }
-    async getAllAlerts(){
-        return await this.AlertRepository.getAlerts()
+    async getAllAlerts() {
+        const alertsTable = await this.AlertRepository.getAllAlerts();
+
+        return alertsTable.map((alert) => {
+            // Determinar tipo
+            const type = alert.closing_id
+                ? 'closure'
+                : alert.movement_id
+                ? 'movement'
+                : 'info';
+
+            // Determinar severidad
+            let severity;
+            if (type === 'closure') severity = 'critical';
+            else if (type === 'movement') severity = 'warning';
+            else severity = 'info';
+
+            // Determinar título
+            let title;
+            if (type === 'closure') title = 'Diferencia en cierre';
+            else if (type === 'movement') title = 'Movimiento inusual';
+            else title = 'Notificación informativa';
+
+            // Formatear descripción personalizada
+            let description;
+            if (type === 'closure') {
+                description = `Se detectó una diferencia de $${alert.closing?.difference?.toLocaleString('es-CO')} en el cierre de caja #${alert.closing_id}.`;
+            } else if (type === 'movement') {
+                description = `Se registró un movimiento inusual de alto valor en el movimiento #${alert.movement_id}.`;
+            } else {
+                description = alert.description || 'Información general';
+            }
+
+            return {
+                id: alert.id.toString(),
+                type,
+                severity,
+                title,
+                description,
+                amount: alert.movement?.ammount ?? alert.closing?.difference ?? null,
+                date: alert.created_at ? new Date(alert.created_at).toISOString() : null,
+                operator: `${alert.user.name} ${alert.user.last_name}`,
+                relatedId:
+                    type === 'closure'
+                        ? `CLOSURE-${alert.closing_id}`
+                        : type === 'movement'
+                        ? `MOV-${alert.movement_id}`
+                        : `ALERT-${alert.id}`,
+            };
+        });
     }
+
 
     async formatAlerts(alerts){
         const formatedAlerts = []

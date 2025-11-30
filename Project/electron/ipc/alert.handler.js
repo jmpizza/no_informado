@@ -97,9 +97,8 @@ export function setupAlertHandlers() {
   ipcMain.handle("alert:getAllAlerts", async (event) => {
     try {
       const alerts = await alertService.getAllAlerts()
-      const formatedAlerts = await alertService.formatAlerts(alerts)
     
-      return { success: true, data:formatedAlerts };
+      return { success: true, data:alerts };
 
     } catch (error) {
       console.log("ERROR en alert:checkTimeInterval", error);
