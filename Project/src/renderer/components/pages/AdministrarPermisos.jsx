@@ -9,8 +9,7 @@ export default function AdministrarPermisos() {
   const [filtered, setFiltered] = useState([]);
 
   const fetchUsers = async () => {
-    const res = await window.api.getUsersWithPermissions(); 
-    // Debes tener una función similar en tu backend
+    const res = await window.api.getUsers();
     if (res.success) {
       setUsers(res.users);
       setFiltered(res.users);
@@ -31,7 +30,6 @@ export default function AdministrarPermisos() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
-
       <div className="flex flex-row gap-2 p-4 shadow items-center bg-white">
         <PanelLeft className="text-black p-3" size={60} />
         <div className="flex flex-col">
@@ -41,7 +39,6 @@ export default function AdministrarPermisos() {
       </div>
 
       <div className="flex flex-col items-center justify-center flex-1 p-6">
-
         <div className="bg-white flex flex-col shadow-2xl rounded-2xl w-full max-w-3xl">
           <div className="flex flex-row px-10 pt-6 items-center gap-4">
             <KeyRound className="flex-none text-blue-600 row-span-2 bg-blue-400/20 p-2" size={48} />
@@ -79,7 +76,6 @@ export default function AdministrarPermisos() {
             </div>
           </div>
 
-          {/* Tabla equivalente a UserTable pero para permisos */}
           <PermisosTable users={filtered} reload={fetchUsers} />
         </div>
       </div>
