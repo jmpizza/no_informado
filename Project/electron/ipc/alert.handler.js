@@ -82,12 +82,24 @@ export function setupAlertHandlers() {
 
 
       if (await alertService.checkTimeInterval(time)){
-        console.log("intervalo")
         const user = getAuthenticatedUser()
         const alert = await alertService.createAlertTime(user)
       }
     
       return { success: true };
+
+    } catch (error) {
+      console.log("ERROR en alert:checkTimeInterval", error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle("alert:getAllAlerts", async (event) => {
+    try {
+      const alerts = await alertService.getAllAlerts()
+      const formatedAlerts = await alertService.formatAlerts(alerts)
+    
+      return { success: true, data:formatedAlerts };
 
     } catch (error) {
       console.log("ERROR en alert:checkTimeInterval", error);

@@ -124,5 +124,26 @@ export default class AlertService {
             maxAnomalousMovementsPerDay: formatted.maxAnomalousMovementsPerDay
         };
         }
+    async getAllAlerts(){
+        return await this.AlertRepository.getAlerts()
+    }
+
+    async formatAlerts(alerts){
+        const formatedAlerts = []
+        for (let i = 0; i < alerts.length; i++) {
+            const alert = {
+                id: alerts[i].id,
+                type: 'info',
+                severity: 'warning',
+                title: 'Notificación informativa',
+                description: alerts[i].description,
+                date: (alerts[i].created_at).toISOString(),
+                operator: alerts[i].user_id,
+                relatedId: alerts[i].movement_id,
+                }
+            formatedAlerts.push(alert)
+            }
+        return formatedAlerts
+    }
 
 }

@@ -60,9 +60,10 @@ export default function AlertHistory() {
 
   useEffect(() => {
     async function loadAlerts() {
+      const alerts = (await window.api.getAllAlerts()).data
+
       setLoading(true);
-      const data = await fetchAlertsFromPrisma();
-      setAlerts(data);
+      setAlerts(alerts);
       setLoading(false);
     }
     loadAlerts();
