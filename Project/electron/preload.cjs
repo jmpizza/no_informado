@@ -62,14 +62,14 @@ try {
       }),
     getClosureDetails: (closing_id) =>
       ipcRenderer.invoke("closing:getClosureDetails", closing_id),
-    exportToPdf: (closure) => 
-      ipcRenderer.invoke("export:exportToPdf", closure),
     exportAllClosings: (closure) => 
       ipcRenderer.invoke("export:exportAllClosings", closure),
     getInitialBalancesByPaymentMethods: () => 
       ipcRenderer.invoke("movement:getInitialBalancesByPaymentMethods"),
     getAuthenticatedUser: () => 
       ipcRenderer.invoke("user:getId"),
+    exportToPdf: (closure) => ipcRenderer.invoke("export:exportToPdf", closure),
+    getAllAlerts: () => ipcRenderer.invoke("alert:getAllAlerts"),
   });
 } catch (error) {
   console.error("Error en preload script:", error);
