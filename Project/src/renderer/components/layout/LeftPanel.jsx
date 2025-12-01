@@ -4,10 +4,8 @@ import {
     Home,
     DollarSign,
     Users,
-    BarChart3,
     AlertTriangle,
     CreditCard,
-    Settings,
     LogOut,
     ChevronDown,
     ChevronUp
@@ -45,8 +43,6 @@ export default function LeftPanel({ setView }) {
             ] 
         },
 
-        { title: "Reportes y analisis", icon: BarChart3, view: "reports", children: null, roles: ["admin", "operador"] },
-
         { 
             title: "Alertas e inconsistencias", 
             icon: AlertTriangle, 
@@ -59,8 +55,6 @@ export default function LeftPanel({ setView }) {
         },
 
         { title: "Medios de pago", icon: CreditCard, view: "mediosPago", children: null, roles: ["admin", "operador"] },
-
-        { title: "Configuracion del negocio", icon: Settings, view: "settings", children: null, roles: ["admin"] },
     ];
 
     const [openIndex, setOpenIndex] = useState(null);
