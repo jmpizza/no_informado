@@ -8,21 +8,8 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        checkAuth();
+        setLoading(false);
     }, []);
-
-    const checkAuth = () => {
-        try {
-            const savedUser = localStorage.getItem('user');
-            if (savedUser) {
-                setUser(JSON.parse(savedUser));
-            }
-        } catch (error) { // eslint-disable-line no-unused-vars
-            // Ignorar errores silenciosamente
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const login = async (email, password) => {
         try {
@@ -34,7 +21,6 @@ export function AuthProvider({ children }) {
 
             if (result.success) {
                 setUser(result.user);
-                localStorage.setItem('user', JSON.stringify(result.user));
                 return { success: true };
             } else {
                 return { success: false, error: result.error };
@@ -58,14 +44,13 @@ export function AuthProvider({ children }) {
 
             const result = await window.api.createUser(userData);
             return result;
-        } catch (error) { // eslint-disable-line no-unused-vars
+        } catch (_error) {
             return { success: false, error: 'Error al crear usuario. Intente nuevamente.' };
         }
     };
 
     const logout = () => {
         setUser(null);
-        localStorage.removeItem('user');
     };
 
     const value = {
