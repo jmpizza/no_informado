@@ -4,35 +4,33 @@ import {
     Home,
     DollarSign,
     Users,
-    BarChart3,
     AlertTriangle,
     CreditCard,
-    Settings,
-    Brain,
     LogOut,
     ChevronDown,
     ChevronUp
 } from "lucide-react";
 
 export default function LeftPanel({ setView }) {
-    const { logout } = useAuth();
-
-    const role = "admin";
+    const { user, logout } = useAuth();
+    const role = user?.rol?.name?.toLowerCase();
 
     const menuItems = [
-        { title: "Inicio", icon: Home, view: "home", children: null, roles: ["admin", "cajero", "usuario"] },
+        { title: "Inicio", icon: Home, view: "home", children: null, roles: ["admin", "cajero", "usuario", "operador"] },
+
         { 
             title: "Operacion de Caja", 
             icon: DollarSign, 
             view: null, 
-            roles: ["admin", "cajero"],
+            roles: ["admin", "cajero", "operador"],
             children: [
-                { title: "Registrar movimiento", view: "movimientoCaja", roles: ["admin", "cajero"] },
-                { title: "Realizar Cierre", view:"cierre", roles: ["admin", "cajero"] },
+                { title: "Registrar movimiento", view: "movimientoCaja", roles: ["admin", "cajero", "operador"] },
+                { title: "Realizar Cierre", view:"cierre", roles: ["admin", "cajero", "operador"] },
                 { title:"Historial de cierres", view:"closeHistory", roles: ["admin"] },
                 { title:"Saldos Iniciales", view:"saldosIniciales", roles: ["admin"] }
             ] 
         },
+
         { 
             title: "Administrar usuarios", 
             icon: Users, 
@@ -44,19 +42,19 @@ export default function LeftPanel({ setView }) {
                 { title: "Administrar roles", view: "administrarRoles", roles: ["admin"] }
             ] 
         },
-        { title: "Reportes y analisis", icon: BarChart3, view: "reports", children: null, roles: ["admin"] },
+
         { 
             title: "Alertas e inconsistencias", 
             icon: AlertTriangle, 
             view: null, 
-            roles: ["admin"],
+            roles: ["admin", "operador"],
             children: [
                 {title:"Parametros de alertas", view:"alertParameter", roles: ["admin"]},
-                {title:"Historial de alertas", view:"alertHistory", roles: ["admin"]}
+                {title:"Historial de alertas", view:"alertHistory", roles: ["admin", "operador"]}
             ]
         },
-        { title: "Medios de pago", icon: CreditCard, view: "mediosPago", children: null, roles: ["admin"] },
-        { title: "Configuracion del negocio", icon: Settings, view: "settings", children: null, roles: ["admin"] },
+
+        { title: "Medios de pago", icon: CreditCard, view: "mediosPago", children: null, roles: ["admin", "operador"] },
     ];
 
     const [openIndex, setOpenIndex] = useState(null);
@@ -64,8 +62,19 @@ export default function LeftPanel({ setView }) {
 
     const handleLogout = () => {
         const confirmed = window.confirm("¿Está seguro que desea cerrar sesión?");
-        if (confirmed) logout();
+        if (confirmed) {
+            logout();
+            setView("dashboard");
+        }
     };
+
+    if (!user || !role) {
+        return (
+            <div className="bg-[#1c398e] text-white w-64 h-screen flex items-center justify-center">
+                Cargando...
+            </div>
+        );
+    }
 
     return (
         <div className="bg-[#1c398e] fixed left-0 top-0 w-64 h-screen flex flex-col">
@@ -84,7 +93,7 @@ export default function LeftPanel({ setView }) {
 
             <div>
                 {menuItems
-                    .filter(item => item.roles.includes(role)) // ⬅️ FILTRA POR ROL
+                    .filter(item => item.roles.includes(role))
                     .map((item, index) => {
                         const Icon = item.icon;
                         const isOpen = openIndex === index;
@@ -111,7 +120,7 @@ export default function LeftPanel({ setView }) {
                                 {isOpen && item.children && (
                                     <div className="ml-10 space-y-1">
                                         {item.children
-                                            .filter(child => child.roles.includes(role)) // ⬅️ FILTRA SUBMENÚ POR ROL
+                                            .filter(child => child.roles.includes(role))
                                             .map((child, i) => (
                                                 <span
                                                     key={i}
