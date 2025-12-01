@@ -62,7 +62,10 @@ export default function LeftPanel({ setView }) {
 
     const handleLogout = () => {
         const confirmed = window.confirm("¿Está seguro que desea cerrar sesión?");
-        if (confirmed) logout();
+        if (confirmed) {
+            logout();
+            setView("dashboard");
+        }
     };
 
     if (!user || !role) {
