@@ -1,8 +1,8 @@
-import { PanelLeft, Shield, Search } from 'lucide-react';
+import { PanelLeft, KeyRound, Search } from 'lucide-react';
 import { useEffect, useState } from "react";
-import UserTable from "../auxiliary/UserTable";
+import PermisosTable from "../auxiliary/PermisosTabla";
 
-export default function AdministrarRoles() {
+export default function AdministrarPermisos() {
   const [busqueda, setBusqueda] = useState("");
   const [cedulaBusqueda, setCedulaBusqueda] = useState("");
   const [users, setUsers] = useState([]);
@@ -30,29 +30,27 @@ export default function AdministrarRoles() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
-
       <div className="flex flex-row gap-2 p-4 shadow items-center bg-white">
         <PanelLeft className="text-black p-3" size={60} />
         <div className="flex flex-col">
           <span className="text-black font-semibold">Panel de administración</span>
-          <span className="text-sm text-gray-700">Gestión de usuarios y control de caja</span>
+          <span className="text-sm text-gray-700">Gestión de permisos y control de accesos</span>
         </div>
       </div>
 
       <div className="flex flex-col items-center justify-center flex-1 p-6">
-
         <div className="bg-white flex flex-col shadow-2xl rounded-2xl w-full max-w-3xl">
           <div className="flex flex-row px-10 pt-6 items-center gap-4">
-            <Shield className="flex-none text-blue-600 row-span-2 bg-blue-400/20 p-2" size={48} />
+            <KeyRound className="flex-none text-blue-600 row-span-2 bg-blue-400/20 p-2" size={48} />
             <div className="flex flex-col">
-              <span className="text-black font-semibold">Administrar roles de usuario</span>
-              <span className="text-sm text-gray-700">Busca un usuario y modifica su rol dentro del sistema</span>
+              <span className="text-black font-semibold">Administrar permisos de usuario</span>
+              <span className="text-sm text-gray-700">Busca un usuario y modifica sus permisos dentro del sistema</span>
             </div>
           </div>
 
           <div className='grid grid-cols-2 grid-rows-[min-content_1fr] text-black px-8 py-4 gap-x-6'>
             <span className="text-black text-sm mb-1 font-bold">Nombre o apellido</span>
-            <span className="text-black text-sm mb-1 font-bold">Cedula</span>
+            <span className="text-black text-sm mb-1 font-bold">Cédula</span>
 
             <input
               type="text"
@@ -78,11 +76,9 @@ export default function AdministrarRoles() {
             </div>
           </div>
 
-          <UserTable users={filtered} reload={fetchUsers} />
+          <PermisosTable users={filtered} reload={fetchUsers} />
         </div>
       </div>
     </div>
   );
 }
-
-

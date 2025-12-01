@@ -1,17 +1,21 @@
 import { jsPDF } from "jspdf";
 import { commonClosingAlerts } from "./ClosingService.js";
 
-export async function exportClosing(closing){
-    var doc = new jsPDF();
 
+export default class ExportService{
+    constructor(){}
+
+ async  exportClosing(closing){
+    var doc = new jsPDF();
+    
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour:'numeric' };
-    const date = String(closing.created_at.toLocaleString('es-us', options))
-    const total = String(closing.total)
-    const saldoEsperado = String(closing.expected_balance)
-    const differencia = String(closing.difference)
-    const ratio = String((closing.expected_balance/closing.total)*100)
-    const movementLenght = 200
-    const contado = String(closing.counted)
+    const date = String(closing.date.toLocaleString('es-us', options))
+    const total = String(closing.totalExpected)
+    const saldoEsperado = String(closing.totalCounted)
+    const ratio = String((closing.totalCounted/closing.totalExpected)*100) 
+    const paymentMethods = Object.keys(closing.paymentMethods)
+    const diferencia = String(closing.totalDifference) 
+    const rol = String(closing.operator)
 
     doc.setFont('Helvetica')
     doc.setFontSize(30);
@@ -21,24 +25,66 @@ export async function exportClosing(closing){
         20,
         60, 
         'Este reporte corresponde al dia ' + date + ' en el cual se realizo el cierre con un total acumulado de $' 
-        + total + ' pesos en ' + movementLenght + ' movimientos a lo largo del dia.',
+        + total,
         {maxWidth: 170});
 
     doc.setFont('Helvetica', 'bold')
     doc.text(20,80,'Datos del cierre:')
     doc.setFont('Helvetica', 'normal')
 
-    doc.text(20, 90, '\u2022' + 'El dinero contado fisicamente fue $' + contado + ' pesos');
-    doc.text(20, 100, '\u2022' + 'El saldo esperado fue $' + saldoEsperado + ' pesos');
-    doc.text(20, 110, '\u2022' + 'La diferencia fue de $' + differencia + ' pesos');
-    doc.text(20, 120, '\u2022' + 'El saldo esperado del total fue del ' + ratio + '%');
+    doc.text(20, 90, '\u2022' + 'El dinero contado fisicamente fue $' + saldoEsperado + ' pesos');
+    doc.text(20, 100, '\u2022' + 'La razon del contado del total fue del ' + ratio + '%'); 
+    doc.text(20, 110, '\u2022' + 'El diferencia fue del ' + diferencia + ' pesos'); 
+    doc.text(20, 120, '\u2022' + 'El cierre lo hizo: ' + rol);
 
-    const alerta = commonClosingAlerts(closing)
+    doc.setFont('Helvetica', 'bold')
+    doc.text(20,130,'Resumen del cierre:')
+    doc.setFont('Helvetica', 'normal')
 
-    if (alerta){
-        doc.text(20, 130, '\u2022' + 'El cierre activó al menos una alerta');
-    } else {
-        doc.text(20, 130, '\u2022' + 'El cierre no activo alertas');
+    let yValue = 140
+    const payment = closing.paymentMethods
+    for (let i = 0; i < paymentMethods.length; i++) {
+        doc.text(20, yValue, 
+          'Método: ' + payment[i]["name"] + ', ' + 
+          'Total: ' + payment[i]["expectedAmount"] + ', ' + 
+          'Contado: ' + payment[i]["countedAmount"]);
+        yValue = yValue + 10
     }
     doc.save('Reporte.pdf');
+ }
+
+ async  exportAllClosings(closure){
+    const closings = closure.data
+    var doc = new jsPDF();
+    
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour:'numeric' };
+    const now = String((new Date()).toLocaleString('es-co', options))
+    const start = closings[closings.length - 1]['date']
+
+    doc.setFontSize(30);
+    doc.text(40, 30, 'Reporte Total de Cierres');
+    doc.setFontSize(12);
+    doc.text(
+        20,
+        40, 
+        'Este reporte fue generado el ' + now + ' y corresponde a ' + closings.length + ' cierres que empiezan '
+        + 'desde el ' + start,
+        {maxWidth: 170});
+
+    doc.setFont('Helvetica', 'bold')
+    doc.text(20,60,'Listado de cierres:')
+    doc.setFont('Helvetica', 'normal')
+
+    let yValue = 70
+    for (let i = 0; i < closings.length; i++) {
+        let date = closings[i].date
+        const betterDate = String(date.toLocaleString('en-us',options))
+        doc.text(20, yValue, 
+          'Cierre #: ' + closings[i]["closureNumber"] + " | Fecha: " + betterDate + "| Diferencia: " + closings[i].totalDifference),
+        yValue = yValue + 10
+    }
+
+    doc.save('ReporteTotal.pdf');
+    
+ }
 }

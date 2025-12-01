@@ -5,12 +5,12 @@ export default class LogsService {
         this.logsRepository = logsRepository;
     }
 
-    async log(action, userId = null, details = null) {
+    async log(action, details = null) {
         if (!action || typeof action !== 'string' || action.trim() === '') {
             throw new Error('La acción del log es requerida y debe ser un string válido');
         }
 
-        const finalUserId = userId !== null ? userId : getAuthenticatedUser();
+        const finalUserId = getAuthenticatedUser();
 
         const logData = {
             action: action.trim(),

@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Settings, Save, CheckCircle, X, AlertCircle } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 
 export default function AlertParameter({ parameters = {}, onSave = () => {} }) {
+
   const defaultValues = {
     closureDifferenceThreshold: 15000,
     minorDifferenceThreshold: 0,
@@ -12,11 +13,34 @@ export default function AlertParameter({ parameters = {}, onSave = () => {} }) {
     anomalousMovementInterval: 5,
     maxAnomalousMovementsPerDay: 10,
   };
-
+  
   const [formData, setFormData] = useState({ ...defaultValues, ...parameters });
   const [success, setSuccess] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
+  const updateCurrentConfiguration = async () => {
+    try {
+      const params = await window.api.getParameters();
+      
+      setFormData(prev => ({
+        ...prev,
+        ...params.parameters,
+        closureDifferenceThreshold: Number(params.parameters?.closureDifferenceThreshold ?? prev.closureDifferenceThreshold),
+        minorDifferenceThreshold: Number(params.parameters?.minorDifferenceThreshold ?? prev.minorDifferenceThreshold),
+        irregularAmountLimit: Number(params.parameters?.irregularAmountLimit ?? prev.irregularAmountLimit),
+        anomalousMovementInterval: Number(params.parameters?.anomalousMovementInterval ?? prev.anomalousMovementInterval),
+        maxAnomalousMovementsPerDay: Number(params.parameters?.maxAnomalousMovementsPerDay ?? prev.maxAnomalousMovementsPerDay),
+      }));
+    } catch (err) {
+      console.error("Error al colocar los parametros:", err);
+    }
+  };
+
+  useEffect(() => {
+    updateCurrentConfiguration()
+  }, []);
+
+  
   const handleChange = (field, value) => {
     const numValue = parseFloat(value) || 0;
     setFormData(prev => ({ ...prev, [field]: numValue }));
@@ -28,10 +52,16 @@ export default function AlertParameter({ parameters = {}, onSave = () => {} }) {
     setShowConfirmModal(true);
   };
 
-  const handleConfirmSave = () => {
+  const handleConfirmSave = async () => {
+    
+    const response = await window.api.setParameters(formData)
+    const respons = (await window.api.getParameters()).Parameters
+
     onSave(formData);
     setSuccess(true);
     setShowConfirmModal(false);
+
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     setTimeout(() => setSuccess(false), 3000);

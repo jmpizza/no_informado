@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { DollarSign, CreditCard, Smartphone, Wallet, Lock, CheckCircle, AlertCircle, X, Info } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { ICON_MAP } from '../../../constants/iconMap.js';
-import { getAuthenticatedUser } from '../../../backend/utils/SessionContext.js';
 
 
 export default function Cierre({ lastClosure, onClosureConfirmed }) {
@@ -12,7 +11,37 @@ export default function Cierre({ lastClosure, onClosureConfirmed }) {
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [closureCompleted, setClosureCompleted] = useState(false);
   const [lastClosureData, setLastClosureData] = useState(null);
+  const [parametersDetails, setParameters] = useState(null);
+  const [currentUserInfo, setCurrentUserInfo] = useState(null);
+  
 
+  const fetchUserInfo = async () => {
+    try {
+      const response = await window.api.getUserInfo();
+      if (!response.success) throw new Error(response.error);
+      setCurrentUserInfo(response.data);
+    } catch (err) {
+      console.error("Error al obtener información del usuario:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserInfo();
+  }, []);
+
+  const fectParameters = async () => {
+    try {
+      const response = await window.api.getParameters();
+      if (!response.success) throw new Error(response.error);
+      setParameters(response.parameters);
+    } catch (err) {
+      console.error("Error al obtener parámetros:", err);
+    }
+  };
+
+  useEffect(() => {
+    fectParameters();
+  }, []);
 
 
   const fetchClosingData = async () => {
@@ -37,34 +66,32 @@ export default function Cierre({ lastClosure, onClosureConfirmed }) {
     }
   };
 
-    // Al montar el componente, cargamos los datos del cierre
   useEffect(() => {
     fetchClosingData();
   }, []);
 
-/*
+  
   const fetchLastClosing = async () => {
     try {
-      const response = await window.api.fetchLastClosing();
+      const response = await window.api.getLastClosing();
 
       if (!response.success) throw new Error(response.error);
 
-      // Aquí puedes manejar la respuesta del último cierre si es necesario
-      return response.data;
+      const lastClosure = response.data;
+
+      setLastClosureData(lastClosure);
 
     } catch (err) {
       console.error("Error al obtener el último cierre:", err);
     }
   };
 
+
   useEffect(() => {
-    const loadLastClosure = async () => {
-      const data = await fetchLastClosing();
-      if (data) setLastClosureData(data);
-    };
-    loadLastClosure();
+    fetchLastClosing();
   }, []);
-*/
+
+
  
   const handleAmountChange = (id, value) => {
     if (value === '' || /^\d*\.?\d*$/.test(value)) {
@@ -86,14 +113,22 @@ export default function Cierre({ lastClosure, onClosureConfirmed }) {
   };
 
   const getStatusColor = (difference) => {
-    if (difference <= -15000) {
+    const safeParams = {
+      closureDifferenceThreshold: parametersDetails?.closureDifferenceThreshold ?? 15000,
+      minorDifferenceThreshold: parametersDetails?.minorDifferenceThreshold ?? 5000,
+    };
+
+    if (difference <= -(safeParams.closureDifferenceThreshold)) {
       return { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' };
-    } else if (difference < 0) {
-      return { bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200' };
-    } else {
-      return { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' };
     }
+
+    if (difference <= -(safeParams.minorDifferenceThreshold)) {
+      return { bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200' };
+    }
+
+    return { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' };
   };
+
 
   const calculateTotals = () => {
     const totalExpected = paymentMethods.reduce((sum, pm) => sum + pm.expectedAmount, 0);
@@ -119,48 +154,87 @@ export default function Cierre({ lastClosure, onClosureConfirmed }) {
   });
 
   const handleConfirmClosure = async () => {
+    const currentDate = new Date();
+    const methodsCount = paymentMethods.length;
+
+
+    const closingData = {
+      total: totals.totalCounted,
+      counted: totals.totalCounted,
+      expected_balance: totals.totalExpected,
+      difference: totals.totalDifference,
+      comments: `Cierre realizado con ${methodsCount} medios de pago.`,
+      created_at: currentDate,
+      user_id: 1000000000 
+    };
+
   
-  const currentDate = new Date();
 
-  console.log(getAuthenticatedUser());
 
-  const closingData = {
-    total: totals.totalCounted,                
-    counted: totals.totalCounted,             
-    expected_balance: totals.totalExpected,    
-    difference: totals.totalDifference,       
-    comments: `Cierre con ${paymentMethods.length} métodos de pago`, 
-    created_at: currentDate,
-    user_id: null
+    try {
+
+      const response = await window.api.createClosing(closingData);
+      const alert = await window.api.checkClosing(closingData);
+      
+
+      if (!response.success) throw new Error(response.error);
+
+      const newClosingId = response.data.id;
+
+      const closingDetails = paymentMethods.map(pm => ({
+        name: pm.name, 
+        closing_id: newClosingId,
+        expected_balance: Number(pm.expectedAmount) || 0,
+        counted: Number(pm.countedAmount) || 0,
+        comments: pm.observations || null,
+        created_at: currentDate.toISOString()
+      }));
+
+      
+
+      const responseDetails = await window.api.createClosingDetails(closingDetails);
+
+      if (!responseDetails.success) throw new Error(responseDetails.error);
+
+
+      setShowConfirmationModal(false);
+      
+
+      await resetModule();
+
+      setClosureCompleted(true);
+
+      setTimeout(() => setClosureCompleted(false), 3000);
+
+
+
+    } catch (err) {
+      console.error("Error al guardar cierre:", err);
+    }
   };
 
-  try {
-    // Llamada a tu API/DB para guardar
-    const response = await window.api.createClosing(closingData);
-
-    if (!response.success) throw new Error(response.error);
-
-    // Marcar cierre como completado en React
-    setClosureCompleted(true);
-    setShowConfirmationModal(false);
-
-    // Scroll hacia arriba para que se vea el mensaje
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    // Opcional: notificar al padre
-    onClosureConfirmed && onClosureConfirmed(closingData);
-
-  } catch (err) {
-    console.error("Error al guardar cierre:", err);
-  }
-};
 
 
   const handleCancelClosure = () => {
     setShowConfirmationModal(false);
   };
 
+  const resetModule = async () => {
+    setPaymentMethods([]);
+    setLastClosureData(null);
+    setClosureCompleted(false);
+
+    await fetchClosingData();
+    await fetchLastClosing();
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const totalStatusColor = getStatusColor(totals.totalDifference);
+ 
+  if (!parametersDetails || paymentMethods.length === 0 || !lastClosureData) {
+  return <div>Cargando...</div>;
+  }
 
   return (
     <div className=''>
@@ -195,14 +269,17 @@ export default function Cierre({ lastClosure, onClosureConfirmed }) {
       </div>
 
       {/* Last closure */}
-      {lastClosure && (
+      
+      {lastClosureData && (
         <div className="mb-6">
           <h3 className="text-gray-500 mb-3">Último cierre registrado</h3>
-          <div className={`rounded-lg border p-4 ${getStatusColor(lastClosureData.difference).border} ${getStatusColor(lastClosureData.totalDifference).bg}`}>
+          <div className={`rounded-lg border p-4 ${getStatusColor(lastClosureData.difference).border} ${getStatusColor(lastClosureData.difference).bg}`}>
             <div className="grid grid-cols-4 gap-4">
               <div>
                 <p className="text-gray-600 text-sm mb-1">Cierre #{lastClosureData.id}</p>
-                <p className="text-gray-900">{lastClosureData.date}</p>
+                <p className="text-gray-900">
+                  {lastClosureData?.date ? new Date(lastClosureData.date).toLocaleString('es-CO') : "—"}
+                </p>
               </div>
               <div>
                 <p className="text-gray-600 text-sm mb-1">Operador</p>
@@ -229,20 +306,21 @@ export default function Cierre({ lastClosure, onClosureConfirmed }) {
         </div>
       )}
 
+
       {/* Payment table */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6">
         <table className="w-full">
           <thead className="bg-gray-50 border-b">
             <tr>
-              <th className="px-6 py-3 text-left">Medio</th>
-              <th className="px-6 py-3 text-left">Esperado</th>
-              <th className="px-6 py-3 text-left">Contado</th>
-              <th className="px-6 py-3 text-left">Diferencia</th>
-              <th className="px-6 py-3 text-left">Observaciones</th>
+              <th className="px-6 py-3 text-left text-gray-600">Medio</th>
+              <th className="px-6 py-3 text-left text-gray-600">Esperado</th>
+              <th className="px-6 py-3 text-left text-gray-600">Contado</th>
+              <th className="px-6 py-3 text-left text-gray-600">Diferencia</th>
+              <th className="px-6 py-3 text-left text-gray-600">Observaciones</th>
             </tr>
           </thead>
 
-          <tbody className="divide-y">
+          <tbody className="divide-y text-gray-700">
             {paymentMethods.map(pm => {
               const Icon = pm.icon;
               const difference = calculateDifference(pm.expectedAmount, pm.countedAmount);
@@ -270,7 +348,7 @@ export default function Cierre({ lastClosure, onClosureConfirmed }) {
                       value={pm.countedAmount}
                       onChange={e => handleAmountChange(pm.id, e.target.value)}
                       placeholder="0"
-                      className="max-w-xs"
+                      className="max-w-xs text-gray-700"
                     />
                   </td>
 
@@ -324,7 +402,11 @@ export default function Cierre({ lastClosure, onClosureConfirmed }) {
         <div className="grid grid-cols-3 gap-6">
           <div>
             <p className="text-gray-500 text-sm mb-1">Operador</p>
-            <p className="text-blue-600">Juan Pérez (Cajero)</p>
+            <p className="text-blue-600">
+            {currentUserInfo
+              ? `${currentUserInfo.name} ${currentUserInfo.lastName} (${currentUserInfo.rol.name})`
+              : 'Cargando usuario...'}
+          </p>
           </div>
 
           <div>
@@ -376,7 +458,11 @@ export default function Cierre({ lastClosure, onClosureConfirmed }) {
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div>
                     <p className="text-gray-500 text-sm mb-1">Operador</p>
-                    <p className="text-blue-600">Juan Pérez (Cajero)</p>
+                    <p className="text-blue-600">
+                    {currentUserInfo
+                      ? `${currentUserInfo.name} ${currentUserInfo.lastName} (${currentUserInfo.rol.name})`
+                      : 'Cargando usuario...'}
+                  </p>
                   </div>
                   <div>
                     <p className="text-gray-500 text-sm mb-1">Fecha y hora</p>
@@ -385,7 +471,7 @@ export default function Cierre({ lastClosure, onClosureConfirmed }) {
                 </div>
 
                 <div className="pt-4 border-t">
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-3 gap-4 text-black">
                     <div>
                       <p className="text-gray-500 text-sm mb-1">Total esperado</p>
                       <p>$ {totals.totalExpected.toLocaleString('es-CO')}</p>
@@ -408,7 +494,7 @@ export default function Cierre({ lastClosure, onClosureConfirmed }) {
               {/* Detalle por medio */}
               <div>
                 <h3 className="mb-4 text-gray-900">Detalle por medio de pago</h3>
-                <div className="space-y-3">
+                <div className="space-y-3 text-black">
                   {paymentMethods.map(pm => {
                     const counted = parseFloat(pm.countedAmount) || 0;
                     const difference = counted - pm.expectedAmount;

@@ -72,4 +72,55 @@ export default class ClosingRepository {
   async delete(id) {
     return await this.db.closing.delete({ where: { id } });
   }
+
+  async createClosingDetails(detailsArray) {
+    return await this.db.closing_details.createMany({
+      data: detailsArray.map(d => ({
+        comments: d.comments,
+        expected_balance: d.expected_balance,
+        counted: d.counted,
+        difference: d.expected_balance - d.counted,
+        payment_method_id: d.payment_method_id || null,
+        closing_id: d.closing_id,
+        created_at: d.created_at,
+        name: d.name
+      }))
+    });
+  }
+
+  async getClosureWithDetails(id) {
+    return await this.db.closing.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        created_at: true,
+        expected_balance: true,
+        counted: true,
+        difference: true,
+        user: {
+          select: {
+            name: true,
+            last_name: true
+          }
+        },
+        closing_details: {
+          select: {
+            id: true,
+            expected_balance: true,
+            counted: true,
+            comments: true,
+            difference: true,
+            payment_method: {
+              select: {
+                name: true,
+                id: true,
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+
 }
